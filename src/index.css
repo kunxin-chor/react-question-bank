@@ -40,6 +40,16 @@ body {
   overflow: hidden;
 }
 
+/* Read-only Monaco regions ( // @lock ... // @endlock ). */
+.qb-lock-region {
+  background-color: rgba(148, 163, 184, 0.18); /* slate-400 @ 18% */
+}
+.qb-lock-margin {
+  background-color: rgba(148, 163, 184, 0.35);
+  width: 3px !important;
+  margin-left: 2px;
+}
+
 @layer components {
   .btn {
     @apply px-2.5 py-1 text-sm rounded border border-border-light dark:border-border-dark

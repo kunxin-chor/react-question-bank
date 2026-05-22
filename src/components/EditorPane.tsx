@@ -1,5 +1,6 @@
 import { useEffect, useReducer, useRef } from 'react';
 import Editor, { type OnMount } from '@monaco-editor/react';
+import type * as Monaco from 'monaco-editor';
 
 interface Props {
   files: Record<string, string>;
@@ -89,8 +90,116 @@ export default function EditorPane({
   const fileNames = Object.keys(state.buffers);
   const activeValue = state.buffers[activeFile] ?? '';
 
-  const onMount: OnMount = (editor) => {
+  // Read-only region support. Lines wrapped between `// @lock` and
+  // `// @endlock` (also `/* @lock */` for CSS, `<!-- @lock -->` for HTML)
+  // become uneditable. Implementation:
+  //   1. Scan the active model for marker lines.
+  //   2. Add a decoration over each protected range (visual cue + sticky
+  //      tracking that auto-adjusts as surrounding text changes).
+  //   3. On every content change, if any change.range intersects a protected
+  //      decoration's range, fire `undo` to revert the edit immediately.
+  //   4. Suppress recursion via a flag while undo is in-flight.
+  const lockDecorationsRef = useRef<string[]>([]);
+  const revertingRef = useRef(false);
+
+  const onMount: OnMount = (editor, monaco) => {
     editor.updateOptions({ tabSize: 2, fontSize: 13, minimap: { enabled: false } });
+
+    const isLockStart = (line: string) =>
+      /(\/\/|\/\*|<!--)\s*@lock\b/.test(line);
+    const isLockEnd = (line: string) =>
+      /(\/\/|\/\*|<!--)\s*@endlock\b/.test(line);
+
+    const computeRanges = (model: Monaco.editor.ITextModel) => {
+      const ranges: Monaco.IRange[] = [];
+      const total = model.getLineCount();
+      let start = -1;
+      for (let i = 1; i <= total; i++) {
+        const line = model.getLineContent(i);
+        if (start === -1 && isLockStart(line)) {
+          start = i;
+        } else if (start !== -1 && isLockEnd(line)) {
+          ranges.push({
+            startLineNumber: start,
+            startColumn: 1,
+            endLineNumber: i,
+            endColumn: model.getLineMaxColumn(i),
+          });
+          start = -1;
+        }
+      }
+      return ranges;
+    };
+
+    const refreshDecorations = () => {
+      const model = editor.getModel();
+      if (!model) return;
+      const ranges = computeRanges(model);
+      lockDecorationsRef.current = editor.deltaDecorations(
+        lockDecorationsRef.current,
+        ranges.map((r) => ({
+          range: r,
+          options: {
+            isWholeLine: true,
+            className: 'qb-lock-region',
+            marginClassName: 'qb-lock-margin',
+            hoverMessage: { value: 'This block is read-only.' },
+            stickiness:
+              monaco.editor.TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges,
+          },
+        })),
+      );
+    };
+
+    const rangesIntersect = (a: Monaco.IRange, b: Monaco.IRange) => {
+      if (a.endLineNumber < b.startLineNumber) return false;
+      if (a.startLineNumber > b.endLineNumber) return false;
+      if (
+        a.endLineNumber === b.startLineNumber &&
+        a.endColumn <= b.startColumn
+      )
+        return false;
+      if (
+        a.startLineNumber === b.endLineNumber &&
+        a.startColumn >= b.endColumn
+      )
+        return false;
+      return true;
+    };
+
+    const attachContentListener = (model: Monaco.editor.ITextModel) => {
+      refreshDecorations();
+      return model.onDidChangeContent((e) => {
+        if (revertingRef.current) return;
+        const lockedRanges = (editor.getModel()?.getAllDecorations() ?? [])
+          .filter((d) => d.options.className === 'qb-lock-region')
+          .map((d) => d.range);
+        const violated = e.changes.some((c) =>
+          lockedRanges.some((lr) => rangesIntersect(c.range, lr)),
+        );
+        if (violated) {
+          revertingRef.current = true;
+          editor.trigger('lock-violation', 'undo', null);
+          // Release on next tick so the undo's own change event is ignored.
+          queueMicrotask(() => {
+            revertingRef.current = false;
+          });
+          return;
+        }
+        refreshDecorations();
+      });
+    };
+
+    let contentSub: Monaco.IDisposable | null = null;
+    const initial = editor.getModel();
+    if (initial) contentSub = attachContentListener(initial);
+
+    // Re-bind when the active file (and thus the model) changes.
+    editor.onDidChangeModel(() => {
+      contentSub?.dispose();
+      const model = editor.getModel();
+      if (model) contentSub = attachContentListener(model);
+    });
   };
 
   return (

@@ -1,6 +1,5 @@
 node_modules
 dist
 .vite
-public/questions.json
 *.log
 .DS_Store

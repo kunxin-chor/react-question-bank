@@ -1,0 +1,80 @@
+{
+  "categories": [
+    {
+      "name": "basics",
+      "order": 1,
+      "questions": [
+        {
+          "id": "53a4d8ee",
+          "aliases": [],
+          "title": "Hello World",
+          "order": 1,
+          "requirements": "Render an `<h1>` element whose text is exactly `Hello, world!`.",
+          "walkthrough": "1. JSX elements are React components; an `<h1>` becomes a `<h1>` DOM node.\n2. Whatever you put between the opening and closing tags becomes the text content.\n3. We export the component as the default so the test can `import App from './App.jsx'`.",
+          "files": {
+            "App.jsx": "export default function App() {\n  return <h1></h1>;\n}"
+          },
+          "entry": "App.jsx",
+          "tests": "import App from './App.jsx';\nimport { render, screen } from './__rtl__.js';\n\ntest('renders a heading saying \"Hello, world!\"', () => {\n  render(<App />);\n  const h = screen.getByRole('heading');\n  expect(h).toHaveTextContent('Hello, world!');\n});",
+          "solution": {
+            "App.jsx": "export default function App() {\n  return <h1>Hello, world!</h1>;\n}"
+          }
+        },
+        {
+          "id": "43c3e352",
+          "aliases": [],
+          "title": "Greet By Name",
+          "order": 2,
+          "requirements": "Build a `Greeting` component that accepts a `name` prop and renders `Hello, <name>!` inside a `<p>` element.\n\nIf `name` is missing or empty, render `Hello, stranger!` instead.\n\nThe default export of `App.jsx` should render `<Greeting name=\"Ada\" />`.",
+          "walkthrough": "1. Destructure the `name` prop in the function signature.\n2. Pick a display value: `name` if truthy and non-empty, otherwise `'stranger'`.\n3. Embed it in JSX with `{}` interpolation.\n4. `App` simply forwards a literal `name=\"Ada\"` to `Greeting`.",
+          "files": {
+            "App.jsx": "export function Greeting({ name }) {\n  return <p></p>;\n}\n\nexport default function App() {\n  return <Greeting />;\n}"
+          },
+          "entry": "App.jsx",
+          "tests": "import App, { Greeting } from './App.jsx';\nimport { render, screen } from './__rtl__.js';\n\ntest('App renders \"Hello, Ada!\"', () => {\n  render(<App />);\n  expect(screen.getByText('Hello, Ada!')).toBeTruthy();\n});\n\ntest('Greeting falls back to \"stranger\" when name missing', () => {\n  render(<Greeting />);\n  expect(screen.getByText('Hello, stranger!')).toBeTruthy();\n});\n\ntest('Greeting falls back when name is empty string', () => {\n  render(<Greeting name=\"\" />);\n  expect(screen.getByText('Hello, stranger!')).toBeTruthy();\n});",
+          "solution": {
+            "App.jsx": "export function Greeting({ name }) {\n  const who = name && name.length > 0 ? name : 'stranger';\n  return <p>Hello, {who}!</p>;\n}\n\nexport default function App() {\n  return <Greeting name=\"Ada\" />;\n}"
+          }
+        },
+        {
+          "id": "3fc35a7a",
+          "aliases": [],
+          "title": "Function Call in JSX",
+          "order": 3,
+          "requirements": "Call the `getMessage` function inside the JSX `{}` expression so the component displays the returned string.",
+          "walkthrough": "1. In JSX, curly braces `{}` let you embed JavaScript expressions.\n2. Anything inside `{}` is evaluated and the result is rendered.\n3. Here we call `getMessage()` which returns a string, and that string becomes the text content of the `<h1>`.\n4. The function definition is locked — you can't modify it, but you can call it as many times as you need.",
+          "files": {
+            "App.jsx": "// @lock\nfunction getMessage() {\n  return 'Hello from a function!';\n}\n// @endlock\n\nexport default function App() {\n  return <h1>{}</h1>;\n}"
+          },
+          "entry": "App.jsx",
+          "tests": "import App from './App.jsx';\nimport { render, screen } from './__rtl__.js';\n\ntest('renders the message from getMessage()', () => {\n  render(<App />);\n  const h = screen.getByRole('heading');\n  expect(h).toHaveTextContent('Hello from a function!');\n});",
+          "solution": {
+            "App.jsx": "// @lock\nfunction getMessage() {\n  return 'Hello from a function!';\n}\n// @endlock\n\nexport default function App() {\n  return <h1>{getMessage()}</h1>;\n}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "state",
+      "order": 2,
+      "questions": [
+        {
+          "id": "d3f53965",
+          "aliases": [],
+          "title": "Counter",
+          "order": 1,
+          "requirements": "Build a counter UI with three buttons and a display:\n\n- A button with text `+` that increments the count by 1.\n- A button with text `-` that decrements the count by 1.\n- A button with text `Reset` that sets the count back to 0.\n- A `<p>` element with `data-testid=\"count\"` showing the current count, starting at `0`.",
+          "walkthrough": "1. Three transitions on a single number — perfect for `useReducer`.\n2. The reducer is a pure function: `(state, action) => nextState`.\n3. Each button dispatches an action by `type`.\n4. `data-testid=\"count\"` lets the test target the display without coupling to layout.",
+          "files": {
+            "App.jsx": "import { useState } from 'react';\n\nexport default function App() {\n  return (\n    <div>\n      <p data-testid=\"count\">0</p>\n      <button>-</button>\n      <button>Reset</button>\n      <button>+</button>\n    </div>\n  );\n}"
+          },
+          "entry": "App.jsx",
+          "tests": "import App from './App.jsx';\nimport { render, screen, fireEvent } from './__rtl__.js';\n\nfunction setup() {\n  render(<App />);\n  return {\n    count: () => screen.getByTestId('count').textContent,\n    inc:   () => fireEvent.click(screen.getByRole('button', { name: '+' })),\n    dec:   () => fireEvent.click(screen.getByRole('button', { name: '-' })),\n    reset: () => fireEvent.click(screen.getByRole('button', { name: 'Reset' })),\n  };\n}\n\ntest('starts at 0', () => {\n  const u = setup();\n  expect(u.count()).toBe('0');\n});\n\ntest('+ increments', () => {\n  const u = setup();\n  u.inc(); u.inc();\n  expect(u.count()).toBe('2');\n});\n\ntest('- decrements', () => {\n  const u = setup();\n  u.dec();\n  expect(u.count()).toBe('-1');\n});\n\ntest('Reset returns to 0', () => {\n  const u = setup();\n  u.inc(); u.inc(); u.inc();\n  u.reset();\n  expect(u.count()).toBe('0');\n});",
+          "solution": {
+            "App.jsx": "import { useReducer } from 'react';\n\nfunction reducer(state, action) {\n  switch (action.type) {\n    case 'inc':   return state + 1;\n    case 'dec':   return state - 1;\n    case 'reset': return 0;\n    default:      return state;\n  }\n}\n\nexport default function App() {\n  const [count, dispatch] = useReducer(reducer, 0);\n  return (\n    <div>\n      <p data-testid=\"count\">{count}</p>\n      <button onClick={() => dispatch({ type: 'dec' })}>-</button>\n      <button onClick={() => dispatch({ type: 'reset' })}>Reset</button>\n      <button onClick={() => dispatch({ type: 'inc' })}>+</button>\n    </div>\n  );\n}"
+          }
+        }
+      ]
+    }
+  ]
+}
