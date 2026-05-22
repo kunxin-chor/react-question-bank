@@ -21,7 +21,7 @@ export interface QuestionsData {
   categories: Category[];
 }
 
-export type TabKey = 'question' | 'tests' | 'solution' | 'walkthrough' | 'preview';
+export type TabKey = 'question' | 'tests' | 'solution' | 'walkthrough';
 
 export interface SolutionState {
   files: Record<string, string>;

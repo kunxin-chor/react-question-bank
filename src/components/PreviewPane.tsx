@@ -1,9 +1,8 @@
 import { useMemo, useState } from 'react';
 import {
   SandpackProvider,
-  SandpackLayout,
-  SandpackPreview,
   SandpackConsole,
+  useSandpackClient,
 } from '@codesandbox/sandpack-react';
 
 interface Props {
@@ -50,11 +49,7 @@ export default function PreviewPane({ files, entry, theme }: Props) {
           Show console
         </label>
       </div>
-      {/* SandpackLayout is required for SandpackPreview to render its iframe
-          correctly. Its default styles (.sp-stack { flex-basis: 350px }) are
-          overridden in src/index.css under .qb-preview so the preview fills
-          the remaining height. */}
-      <div className="qb-preview flex-1 min-h-0 flex flex-col">
+      <div className="qb-preview-host flex-1 min-h-0">
         <SandpackProvider
           template="react"
           theme={theme === 'dark' ? 'dark' : 'light'}
@@ -68,15 +63,39 @@ export default function PreviewPane({ files, entry, theme }: Props) {
             },
           }}
         >
-          <SandpackLayout>
-            <SandpackPreview
-              showOpenInCodeSandbox={false}
-              showRefreshButton
-            />
-            {showConsole && <SandpackConsole />}
-          </SandpackLayout>
+          <CustomPreview />
+          {showConsole && (
+            <div className="qb-console-slot">
+              <SandpackConsole style={{ height: '100%' }} />
+            </div>
+          )}
         </SandpackProvider>
       </div>
+    </div>
+  );
+}
+
+// Custom preview that bypasses SandpackPreview entirely. We render the iframe
+// ourselves (Sandpack drives it via useSandpackClient.iframe ref) and use
+// position:absolute inside a relative wrapper so the iframe always fills its
+// container — sidestepping iframe's quirky intrinsic-sizing in flex layouts.
+function CustomPreview() {
+  const { iframe } = useSandpackClient();
+  return (
+    <div className="qb-preview-slot">
+      <iframe
+        ref={iframe}
+        title="Sandpack Preview"
+        style={{
+          position: 'absolute',
+          inset: 0,
+          width: '100%',
+          height: '100%',
+          border: 0,
+          background: 'white',
+          display: 'block',
+        }}
+      />
     </div>
   );
 }

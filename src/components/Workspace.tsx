@@ -19,7 +19,6 @@ const TABS: { key: TabKey; label: string }[] = [
   { key: 'tests', label: 'Tests' },
   { key: 'solution', label: 'Solution' },
   { key: 'walkthrough', label: 'Walkthrough' },
-  { key: 'preview', label: 'Preview' },
 ];
 
 // Workspace owns the per-question session reducer: which tab is active,
@@ -140,69 +139,70 @@ function WorkspaceInner({
         />
       </section>
 
-      {/* Right column: tabs. Each tab body handles its own overflow so that
-          flex-filling tabs (Preview) can take the full height. */}
+      {/* Right column: always-on Preview at the top (~65%), tabs underneath (~35%). */}
       <section className="w-[44%] min-w-[360px] flex flex-col">
-        <div className="flex items-center border-b border-border-light dark:border-border-dark px-2">
-          {TABS.map((t) => (
-            <button
-              key={t.key}
-              className={`tab-btn ${tab === t.key ? 'active' : ''}`}
-              onClick={() => onTab(t.key)}
-            >
-              {t.label}
-            </button>
-          ))}
+        <div className="basis-[65%] grow-0 shrink-0 min-h-0 border-b border-border-light dark:border-border-dark">
+          <PreviewPane key={q.id} files={files} entry={q.entry} theme={theme} />
         </div>
-        <div className="flex-1 min-h-0">
-          {tab === 'question' && (
-            <div className="h-full overflow-auto">
-              <MarkdownView source={q.requirements} className="p-4" />
-            </div>
-          )}
-          {tab === 'tests' && (
-            <div className="h-full overflow-auto">
-              <TestRunner
-                question={q}
-                files={files}
-                status={state.tests.status}
-                results={state.tests.results}
-                onStart={() => dispatch({ type: 'tests-start' })}
-                onDone={onTestsDone}
-                theme={theme}
-              />
-            </div>
-          )}
-          {tab === 'solution' && (
-            <div className="h-full overflow-auto">
-              <Reveal
-                key={q.id}
-                label="Show solution"
-                caption="Try to solve it yourself first. Once revealed, the solution will stay visible while you're on this tab."
+        <div className="basis-[35%] grow shrink min-h-0 flex flex-col">
+          <div className="flex items-center border-b border-border-light dark:border-border-dark px-2 shrink-0">
+            {TABS.map((t) => (
+              <button
+                key={t.key}
+                className={`tab-btn ${tab === t.key ? 'active' : ''}`}
+                onClick={() => onTab(t.key)}
               >
-                <MarkdownView
-                  source={Object.entries(q.solution)
-                    .map(([name, code]) => `\n\`\`\`jsx\n// ${name}\n${code}\n\`\`\``)
-                    .join('\n')}
-                  className="p-4"
+                {t.label}
+              </button>
+            ))}
+          </div>
+          <div className="flex-1 min-h-0">
+            {tab === 'question' && (
+              <div className="h-full overflow-auto">
+                <MarkdownView source={q.requirements} className="p-4" />
+              </div>
+            )}
+            {tab === 'tests' && (
+              <div className="h-full overflow-auto">
+                <TestRunner
+                  question={q}
+                  files={files}
+                  status={state.tests.status}
+                  results={state.tests.results}
+                  onStart={() => dispatch({ type: 'tests-start' })}
+                  onDone={onTestsDone}
+                  theme={theme}
                 />
-              </Reveal>
-            </div>
-          )}
-          {tab === 'walkthrough' && (
-            <div className="h-full overflow-auto">
-              <Reveal
-                key={q.id}
-                label="Show walkthrough"
-                caption="The walkthrough explains the solution step by step. Reveal it once you've made an attempt."
-              >
-                <MarkdownView source={q.walkthrough} className="p-4" />
-              </Reveal>
-            </div>
-          )}
-          {tab === 'preview' && (
-            <PreviewPane key={q.id} files={files} entry={q.entry} theme={theme} />
-          )}
+              </div>
+            )}
+            {tab === 'solution' && (
+              <div className="h-full overflow-auto">
+                <Reveal
+                  key={q.id}
+                  label="Show solution"
+                  caption="Try to solve it yourself first. Once revealed, the solution will stay visible while you're on this tab."
+                >
+                  <MarkdownView
+                    source={Object.entries(q.solution)
+                      .map(([name, code]) => `\n\`\`\`jsx\n// ${name}\n${code}\n\`\`\``)
+                      .join('\n')}
+                    className="p-4"
+                  />
+                </Reveal>
+              </div>
+            )}
+            {tab === 'walkthrough' && (
+              <div className="h-full overflow-auto">
+                <Reveal
+                  key={q.id}
+                  label="Show walkthrough"
+                  caption="The walkthrough explains the solution step by step. Reveal it once you've made an attempt."
+                >
+                  <MarkdownView source={q.walkthrough} className="p-4" />
+                </Reveal>
+              </div>
+            )}
+          </div>
         </div>
       </section>
     </main>

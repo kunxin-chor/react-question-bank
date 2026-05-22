@@ -44,7 +44,7 @@ export const routeAtom = atom((get) => {
   if (parts[0] === 'q' && parts[1]) {
     questionId = parts[1];
     const t = parts[2] as TabKey | undefined;
-    if (t && ['question', 'tests', 'solution', 'walkthrough', 'preview'].includes(t)) {
+    if (t && ['question', 'tests', 'solution', 'walkthrough'].includes(t)) {
       tab = t;
     }
   }
@@ -74,7 +74,7 @@ function parseRoute(pathname: string): { questionId: string | null; tab: TabKey 
   if (parts[0] === 'q' && parts[1]) {
     questionId = parts[1];
     const t = parts[2] as TabKey | undefined;
-    if (t && ['question', 'tests', 'solution', 'walkthrough', 'preview'].includes(t)) tab = t;
+    if (t && ['question', 'tests', 'solution', 'walkthrough'].includes(t)) tab = t;
   }
   return { questionId, tab };
 }
