@@ -54,13 +54,21 @@ export default function EditorPane({
   const [state, dispatch] = useReducer(reducer, { buffers: files, dirty: false });
   const saveTimer = useRef<number | null>(null);
 
-  // When the upstream files change (question switch, reset), replace our buffers.
-  // We compare keys+values shallowly to avoid clobbering live edits.
+  // When the upstream files change (question switch, reset, or atomWithStorage
+  // hydration arriving late), replace our buffers. We replace if either:
+  //   - the file key set differs, OR
+  //   - any value differs AND we have no unsaved edits (state.dirty is false).
+  // The dirty check protects live typing: while the user has unsaved changes,
+  // we never overwrite their buffer with stale upstream values.
   useEffect(() => {
+    const upstreamKeys = Object.keys(files);
+    const bufferKeys = Object.keys(state.buffers);
     const sameKeys =
-      Object.keys(files).length === Object.keys(state.buffers).length &&
-      Object.keys(files).every((k) => k in state.buffers);
-    if (!sameKeys) {
+      upstreamKeys.length === bufferKeys.length &&
+      upstreamKeys.every((k) => k in state.buffers);
+    const sameValues =
+      sameKeys && upstreamKeys.every((k) => files[k] === state.buffers[k]);
+    if (!sameKeys || (!sameValues && !state.dirty)) {
       dispatch({ type: 'replace-all', buffers: files });
     }
   }, [files]); // eslint-disable-line react-hooks/exhaustive-deps

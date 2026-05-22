@@ -88,16 +88,28 @@ export const currentQuestionAtom = atom((get) => {
 
 // --- UI state -----------------------------------------------------------------
 
-export const themeAtom = atomWithStorage<'light' | 'dark'>('qb:v1:theme', 'dark');
+// `getOnInit: true` makes atomWithStorage read localStorage synchronously on
+// first access. Without this, jotai v2 returns the initial value first and
+// hydrates from storage asynchronously, which races with components that read
+// the atom on mount (e.g. EditorPane initialising its buffers from the
+// starter files before the saved files arrive).
+export const themeAtom = atomWithStorage<'light' | 'dark'>(
+  'qb:v1:theme',
+  'dark',
+  undefined,
+  { getOnInit: true },
+);
 
 export interface SidebarState {
   collapsed: boolean;
   openCategories: Record<string, boolean>;
 }
-export const sidebarStateAtom = atomWithStorage<SidebarState>('qb:v1:sidebar', {
-  collapsed: false,
-  openCategories: {},
-});
+export const sidebarStateAtom = atomWithStorage<SidebarState>(
+  'qb:v1:sidebar',
+  { collapsed: false, openCategories: {} },
+  undefined,
+  { getOnInit: true },
+);
 
 // --- Per-question saved solutions --------------------------------------------
 
@@ -108,7 +120,12 @@ const emptySolution = (): SolutionState => ({
 });
 
 export const solutionAtomFamily = atomFamily((id: string) =>
-  atomWithStorage<SolutionState>(`qb:v1:solution:${id}`, emptySolution()),
+  atomWithStorage<SolutionState>(
+    `qb:v1:solution:${id}`,
+    emptySolution(),
+    undefined,
+    { getOnInit: true },
+  ),
 );
 
 // Active file per question (transient session state — not persisted by default,
