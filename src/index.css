@@ -14,6 +14,31 @@ body {
 ::-webkit-scrollbar-thumb { @apply bg-slate-300 dark:bg-slate-700 rounded; }
 ::-webkit-scrollbar-track { background: transparent; }
 
+/* Sandpack preview fill: SandpackLayout uses CSS grid/flex with
+   flex-basis: 350px on .sp-stack which prevents children from stretching to
+   100% height. We override it inside our .qb-preview wrapper so the preview
+   iframe fills the full pane and the console docks below it. */
+.qb-preview { display: flex; flex-direction: column; min-height: 0; }
+.qb-preview > * { flex: 1; min-height: 0; }
+.qb-preview .sp-layout {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  border: 0;
+  border-radius: 0;
+  flex-wrap: nowrap;
+}
+.qb-preview .sp-stack {
+  flex-basis: auto !important;
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 0;
+}
+.qb-preview .sp-stack:first-child { flex: 1 1 auto; }
+.qb-preview .sp-stack:nth-child(2) { flex: 0 0 180px; }
+.qb-preview .sp-preview-container,
+.qb-preview .sp-preview-iframe { height: 100%; width: 100%; }
+
 @layer components {
   .btn {
     @apply px-2.5 py-1 text-sm rounded border border-border-light dark:border-border-dark

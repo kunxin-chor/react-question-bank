@@ -12,6 +12,7 @@ import EditorPane from '@/components/EditorPane';
 import PreviewPane from '@/components/PreviewPane';
 import TestRunner from '@/components/TestRunner';
 import MarkdownView from '@/components/MarkdownView';
+import Reveal from '@/components/Reveal';
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: 'question', label: 'Question' },
@@ -126,9 +127,11 @@ function WorkspaceInner({
 
   return (
     <main className="flex-1 min-w-0 flex">
-      {/* Editor (always visible) */}
+      {/* Editor (always visible). Key on q.id forces a full reset of editor
+          buffers/Monaco models when switching questions. */}
       <section className="flex-1 min-w-0 flex flex-col border-r border-border-light dark:border-border-dark">
         <EditorPane
+          key={q.id}
           files={files}
           activeFile={state.activeFile}
           onActiveFile={(f) => dispatch({ type: 'set-active-file', file: f })}
@@ -137,7 +140,8 @@ function WorkspaceInner({
         />
       </section>
 
-      {/* Right column: tabs */}
+      {/* Right column: tabs. Each tab body handles its own overflow so that
+          flex-filling tabs (Preview) can take the full height. */}
       <section className="w-[44%] min-w-[360px] flex flex-col">
         <div className="flex items-center border-b border-border-light dark:border-border-dark px-2">
           {TABS.map((t) => (
@@ -150,34 +154,54 @@ function WorkspaceInner({
             </button>
           ))}
         </div>
-        <div className="flex-1 min-h-0 overflow-auto">
+        <div className="flex-1 min-h-0">
           {tab === 'question' && (
-            <MarkdownView source={q.requirements} className="p-4" />
+            <div className="h-full overflow-auto">
+              <MarkdownView source={q.requirements} className="p-4" />
+            </div>
           )}
           {tab === 'tests' && (
-            <TestRunner
-              question={q}
-              files={files}
-              status={state.tests.status}
-              results={state.tests.results}
-              onStart={() => dispatch({ type: 'tests-start' })}
-              onDone={onTestsDone}
-              theme={theme}
-            />
+            <div className="h-full overflow-auto">
+              <TestRunner
+                question={q}
+                files={files}
+                status={state.tests.status}
+                results={state.tests.results}
+                onStart={() => dispatch({ type: 'tests-start' })}
+                onDone={onTestsDone}
+                theme={theme}
+              />
+            </div>
           )}
           {tab === 'solution' && (
-            <MarkdownView
-              source={Object.entries(q.solution)
-                .map(([name, code]) => `\n\`\`\`jsx\n// ${name}\n${code}\n\`\`\``)
-                .join('\n')}
-              className="p-4"
-            />
+            <div className="h-full overflow-auto">
+              <Reveal
+                key={q.id}
+                label="Show solution"
+                caption="Try to solve it yourself first. Once revealed, the solution will stay visible while you're on this tab."
+              >
+                <MarkdownView
+                  source={Object.entries(q.solution)
+                    .map(([name, code]) => `\n\`\`\`jsx\n// ${name}\n${code}\n\`\`\``)
+                    .join('\n')}
+                  className="p-4"
+                />
+              </Reveal>
+            </div>
           )}
           {tab === 'walkthrough' && (
-            <MarkdownView source={q.walkthrough} className="p-4" />
+            <div className="h-full overflow-auto">
+              <Reveal
+                key={q.id}
+                label="Show walkthrough"
+                caption="The walkthrough explains the solution step by step. Reveal it once you've made an attempt."
+              >
+                <MarkdownView source={q.walkthrough} className="p-4" />
+              </Reveal>
+            </div>
           )}
           {tab === 'preview' && (
-            <PreviewPane files={files} entry={q.entry} theme={theme} />
+            <PreviewPane key={q.id} files={files} entry={q.entry} theme={theme} />
           )}
         </div>
       </section>
