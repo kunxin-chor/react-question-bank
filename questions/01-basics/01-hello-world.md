@@ -37,6 +37,6 @@ export default function App() {
 
 ## Walkthrough
 
-1. JSX elements are React components; an `<h1>` becomes a `<h1>` DOM node.
-2. Whatever you put between the opening and closing tags becomes the text content.
-3. We export the component as the default so the test can `import App from './App.jsx'`.
+1. JSX elements compile to React elements; an `<h1>` becomes an `<h1>` DOM node.
+2. Whatever you place between the opening and closing tags becomes the text content.
+3. The component is the default export so the test can `import App from './App.jsx'`.

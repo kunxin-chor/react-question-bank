@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   SandpackProvider,
   SandpackConsole,
@@ -41,6 +41,15 @@ export default function PreviewPane({ files, entry, theme }: Props) {
     return Object.values(sandpackFiles).join('|');
   }, [sandpackFiles]);
 
+  // Debounce the key to avoid remounting on every keystroke
+  const [debouncedKey, setDebouncedKey] = useState(sandpackKey);
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setDebouncedKey(sandpackKey);
+    }, 500);
+    return () => clearTimeout(timeout);
+  }, [sandpackKey]);
+
   return (
     <div className="h-full flex flex-col bg-panel-light dark:bg-panel-dark">
       <div className="flex items-center justify-between px-2 py-1 border-b border-border-light dark:border-border-dark text-xs shrink-0">
@@ -58,7 +67,7 @@ export default function PreviewPane({ files, entry, theme }: Props) {
       </div>
       <div className="qb-preview-host flex-1 min-h-0">
         <SandpackProvider
-          key={sandpackKey}
+          key={debouncedKey}
           template="react"
           theme={theme === 'dark' ? 'dark' : 'light'}
           files={sandpackFiles}

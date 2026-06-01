@@ -10,7 +10,7 @@
           "title": "Hello World",
           "order": 1,
           "requirements": "Render an `<h1>` element whose text is exactly `Hello, world!`.",
-          "walkthrough": "1. JSX elements are React components; an `<h1>` becomes a `<h1>` DOM node.\n2. Whatever you put between the opening and closing tags becomes the text content.\n3. We export the component as the default so the test can `import App from './App.jsx'`.",
+          "walkthrough": "1. JSX elements compile to React elements; an `<h1>` becomes an `<h1>` DOM node.\n2. Whatever you place between the opening and closing tags becomes the text content.\n3. The component is the default export so the test can `import App from './App.jsx'`.",
           "files": {
             "App.jsx": "export default function App() {\n  return <h1></h1>;\n}"
           },
@@ -21,57 +21,383 @@
           }
         },
         {
-          "id": "43c3e352",
+          "id": "04976eb6",
           "aliases": [],
-          "title": "Greet By Name",
+          "title": "Display Current Date",
           "order": 2,
-          "requirements": "Build a `Greeting` component that accepts a `name` prop and renders `Hello, <name>!` inside a `<p>` element.\n\nIf `name` is missing or empty, render `Hello, stranger!` instead.\n\nThe default export of `App.jsx` should render `<Greeting name=\"Ada\" />`.",
-          "walkthrough": "1. Destructure the `name` prop in the function signature.\n2. Pick a display value: `name` if truthy and non-empty, otherwise `'stranger'`.\n3. Embed it in JSX with `{}` interpolation.\n4. `App` simply forwards a literal `name=\"Ada\"` to `Greeting`.",
+          "requirements": "Render a `<p>` element that displays today's date as a readable string.\n\nThe exact format doesn't matter, as long as the value comes from JavaScript's built-in `Date` object and at minimum contains the current year.\n\n> **Hint:** look up the `Date` constructor and the methods it provides for turning a date into a string.",
+          "walkthrough": "1. `new Date()` returns a `Date` object representing the current moment.\n2. `.toDateString()` formats it as a readable string like `\"Wed May 29 2026\"`.\n3. Inside JSX, wrap the expression in `{}` to embed its result as text.",
           "files": {
-            "App.jsx": "export function Greeting({ name }) {\n  return <p></p>;\n}\n\nexport default function App() {\n  return <Greeting />;\n}"
+            "App.jsx": "export default function App() {\n  return <p></p>;\n}"
           },
           "entry": "App.jsx",
-          "tests": "import App, { Greeting } from './App.jsx';\nimport { render, screen } from './__rtl__.js';\n\ntest('App renders \"Hello, Ada!\"', () => {\n  render(<App />);\n  expect(screen.getByText('Hello, Ada!')).toBeTruthy();\n});\n\ntest('Greeting falls back to \"stranger\" when name missing', () => {\n  render(<Greeting />);\n  expect(screen.getByText('Hello, stranger!')).toBeTruthy();\n});\n\ntest('Greeting falls back when name is empty string', () => {\n  render(<Greeting name=\"\" />);\n  expect(screen.getByText('Hello, stranger!')).toBeTruthy();\n});",
+          "tests": "import App from './App.jsx';\nimport { render, screen } from './__rtl__.js';\n\ntest('renders today\\'s date inside a <p>', () => {\n  const { container } = render(<App />);\n  const p = container.querySelector('p');\n  expect(p).toBeTruthy();\n\n  const expected = new Date().toDateString();\n  const text = (p.textContent || '').trim();\n  // Accept any format that contains today's year, month name or numeric date.\n  const year = String(new Date().getFullYear());\n  expect(text.length > 0).toBeTruthy();\n  expect(text.indexOf(year) !== -1 || text === expected).toBeTruthy();\n});",
           "solution": {
-            "App.jsx": "export function Greeting({ name }) {\n  const who = name && name.length > 0 ? name : 'stranger';\n  return <p>Hello, {who}!</p>;\n}\n\nexport default function App() {\n  return <Greeting name=\"Ada\" />;\n}"
+            "App.jsx": "export default function App() {\n  const today = new Date().toDateString();\n  return <p>{today}</p>;\n}"
           }
         },
         {
-          "id": "3fc35a7a",
+          "id": "5363c534",
           "aliases": [],
-          "title": "Function Call in JSX",
+          "title": "Nested JSX Elements",
           "order": 3,
-          "requirements": "Call the `getMessage` function inside the JSX `{}` expression so the component displays the returned string.",
-          "walkthrough": "1. In JSX, curly braces `{}` let you embed JavaScript expressions.\n2. Anything inside `{}` is evaluated and the result is rendered.\n3. Here we call `getMessage()` which returns a string, and that string becomes the text content of the `<h1>`.\n4. The function definition is locked — you can't modify it, but you can call it as many times as you need.",
+          "requirements": "Render a root `<div>` containing two nested children:\n\n- An `<h1>` with the text `My Page`\n- A `<p>` with the text `Welcome to my site.`",
+          "walkthrough": "1. A JSX expression must return a *single* root element.\n2. Place additional elements between the parent's opening and closing tags to nest them.\n3. Indentation has no semantic effect, but it makes the structure readable.",
           "files": {
-            "App.jsx": "// @lock\nfunction getMessage() {\n  return 'Hello from a function!';\n}\n// @endlock\n\nexport default function App() {\n  return <h1>{}</h1>;\n}"
+            "App.jsx": "export default function App() {\n  return (\n    <div>\n      {/* add the two children here */}\n    </div>\n  );\n}"
           },
           "entry": "App.jsx",
-          "tests": "import App from './App.jsx';\nimport { render, screen } from './__rtl__.js';\n\ntest('renders the message from getMessage()', () => {\n  render(<App />);\n  const h = screen.getByRole('heading');\n  expect(h).toHaveTextContent('Hello from a function!');\n});",
+          "tests": "import App from './App.jsx';\nimport { render, screen } from './__rtl__.js';\n\ntest('renders an <h1> with \"My Page\"', () => {\n  render(<App />);\n  const h = screen.getByRole('heading');\n  expect(h).toHaveTextContent('My Page');\n});\n\ntest('renders a <p> with the welcome text', () => {\n  const { container } = render(<App />);\n  const p = container.querySelector('p');\n  expect(p).toBeTruthy();\n  expect(p).toHaveTextContent('Welcome to my site.');\n});\n\ntest('both elements are nested inside a single root <div>', () => {\n  const { container } = render(<App />);\n  const root = container.firstChild;\n  expect(root.tagName).toBe('DIV');\n  expect(root.querySelector('h1')).toBeTruthy();\n  expect(root.querySelector('p')).toBeTruthy();\n});",
           "solution": {
-            "App.jsx": "// @lock\nfunction getMessage() {\n  return 'Hello from a function!';\n}\n// @endlock\n\nexport default function App() {\n  return <h1>{getMessage()}</h1>;\n}"
+            "App.jsx": "export default function App() {\n  return (\n    <div>\n      <h1>My Page</h1>\n      <p>Welcome to my site.</p>\n    </div>\n  );\n}"
+          }
+        },
+        {
+          "id": "6330d729",
+          "aliases": [],
+          "title": "Embed a Variable in JSX",
+          "order": 4,
+          "requirements": "The `App` component has a locked `const movie` already defined for you. Display the value of `movie` inside the `<h2>` element using JSX interpolation.",
+          "walkthrough": "1. Anywhere inside JSX, `{}` lets you escape into a JavaScript expression.\n2. A bare variable name like `movie` is a valid expression — its current value is dropped in as text.\n3. If `movie` were changed later, the rendered output would automatically reflect the new value.",
+          "files": {
+            "App.jsx": "export default function App() {\n  // @lock\n  const movie = 'The Matrix';\n  // @endlock\n  return <h2></h2>;\n}"
+          },
+          "entry": "App.jsx",
+          "tests": "import App from './App.jsx';\nimport { render } from './__rtl__.js';\n\ntest('renders the value of the movie variable inside the <h2>', () => {\n  const { container } = render(<App />);\n  const h = container.querySelector('h2');\n  expect(h).toBeTruthy();\n  expect(h).toHaveTextContent('The Matrix');\n});",
+          "solution": {
+            "App.jsx": "export default function App() {\n  // @lock\n  const movie = 'The Matrix';\n  // @endlock\n  return <h2>{movie}</h2>;\n}"
+          }
+        },
+        {
+          "id": "e6d0adad",
+          "aliases": [],
+          "title": "Compute Inside JSX",
+          "order": 5,
+          "requirements": "The `App` component has two locked numeric constants, `n1` and `n2`. Using a `{}` expression inside JSX, display the **sum** of the two numbers inside the `<p>` element.",
+          "walkthrough": "1. `{}` in JSX accepts *any* JavaScript expression, including arithmetic.\n2. `n1 + n2` evaluates to a number, which React renders as text.\n3. This is the same `{}` rule you've seen for variables and function calls — there's no separate \"math mode\".",
+          "files": {
+            "App.jsx": "export default function App() {\n  // @lock\n  const n1 = 12;\n  const n2 = 30;\n  // @endlock\n  return <p></p>;\n}"
+          },
+          "entry": "App.jsx",
+          "tests": "import App from './App.jsx';\nimport { render } from './__rtl__.js';\n\ntest('renders the sum of n1 and n2 inside the <p>', () => {\n  const { container } = render(<App />);\n  const p = container.querySelector('p');\n  expect(p).toBeTruthy();\n  expect(p).toHaveTextContent('42');\n});",
+          "solution": {
+            "App.jsx": "export default function App() {\n  // @lock\n  const n1 = 12;\n  const n2 = 30;\n  // @endlock\n  return <p>{n1 + n2}</p>;\n}"
+          }
+        },
+        {
+          "id": "2841a8a2",
+          "aliases": [],
+          "title": "Call a Function That Returns JSX",
+          "order": 6,
+          "requirements": "Call the `renderBadge` function inside the JSX expression so the component displays the badge it returns.\n\nThe function is provided for you and is **read-only** — just invoke it inside the `{}` of the root `<div>`.",
+          "walkthrough": "1. JSX expressions inside `{}` can be *anything that evaluates to a React node* — including the return value of a function.\n2. `renderBadge()` returns a `<span>` element, which React renders just like inline JSX.\n3. This pattern is the seed of *components*: every React component is really just a function that returns JSX.",
+          "files": {
+            "App.jsx": "// @lock\nfunction renderBadge() {\n  return <span className=\"badge\">New!</span>;\n}\n// @endlock\n\nexport default function App() {\n  return (\n    <div>\n      Status: {}\n    </div>\n  );\n}"
+          },
+          "entry": "App.jsx",
+          "tests": "import App from './App.jsx';\nimport { render, screen } from './__rtl__.js';\n\ntest('renders the badge returned by renderBadge()', () => {\n  const { container } = render(<App />);\n  const badge = container.querySelector('span.badge');\n  expect(badge).toBeTruthy();\n  expect(badge).toHaveTextContent('New!');\n});\n\ntest('badge sits next to the \"Status:\" label', () => {\n  const { container } = render(<App />);\n  const text = (container.textContent || '').trim();\n  expect(text.indexOf('Status:') !== -1).toBeTruthy();\n  expect(text.indexOf('New!') !== -1).toBeTruthy();\n});",
+          "solution": {
+            "App.jsx": "// @lock\nfunction renderBadge() {\n  return <span className=\"badge\">New!</span>;\n}\n// @endlock\n\nexport default function App() {\n  return (\n    <div>\n      Status: {renderBadge()}\n    </div>\n  );\n}"
+          }
+        },
+        {
+          "id": "6d0c4827",
+          "aliases": [],
+          "title": "Display an Image",
+          "order": 7,
+          "requirements": "Render an `<img>` element that loads a 300×200 photo from Lorem Picsum.\n\nUse this exact `src`:\n\n```\nhttps://picsum.photos/300/200\n```\n\nAlso include an `alt` attribute set to `Random photo`.",
+          "walkthrough": "1. In JSX, `<img>` is a self-closing tag — note the trailing `/>`.\n2. Attributes like `src` and `alt` are written exactly as they would be in HTML when their values are string literals.\n3. Always provide an `alt` attribute for accessibility; screen readers use it to describe the image.",
+          "files": {
+            "App.jsx": "export default function App() {\n  return (\n    <div>\n      {/* add the <img> here */}\n    </div>\n  );\n}"
+          },
+          "entry": "App.jsx",
+          "tests": "import App from './App.jsx';\nimport { render } from './__rtl__.js';\n\ntest('renders an <img> with the correct src', () => {\n  const { container } = render(<App />);\n  const img = container.querySelector('img');\n  expect(img).toBeTruthy();\n  expect(img.getAttribute('src')).toBe('https://picsum.photos/300/200');\n});\n\ntest('image has the alt text \"Random photo\"', () => {\n  const { container } = render(<App />);\n  const img = container.querySelector('img');\n  expect(img.getAttribute('alt')).toBe('Random photo');\n});",
+          "solution": {
+            "App.jsx": "export default function App() {\n  return (\n    <div>\n      <img src=\"https://picsum.photos/300/200\" alt=\"Random photo\" />\n    </div>\n  );\n}"
+          }
+        },
+        {
+          "id": "70622372",
+          "aliases": [],
+          "title": "Apply a CSS Class",
+          "order": 8,
+          "requirements": "Render a `<p>` element with the text `Important notice` and apply the CSS class `alert` to it.\n\n> **Heads up:** the HTML `class` attribute is named differently in JSX. If your first guess fails, look up how React spells this attribute.",
+          "walkthrough": "1. JSX is JavaScript — `class` is a reserved word for declaring classes.\n2. React renames the attribute to `className`, which it forwards to the DOM as the real `class` attribute.\n3. The browser still sees `<p class=\"alert\">` after React renders it, so existing CSS works unchanged.",
+          "files": {
+            "App.jsx": "export default function App() {\n  return <p>Important notice</p>;\n}"
+          },
+          "entry": "App.jsx",
+          "tests": "import App from './App.jsx';\nimport { render } from './__rtl__.js';\n\ntest('renders the paragraph text', () => {\n  const { container } = render(<App />);\n  const p = container.querySelector('p');\n  expect(p).toBeTruthy();\n  expect(p).toHaveTextContent('Important notice');\n});\n\ntest('paragraph has the \"alert\" class', () => {\n  const { container } = render(<App />);\n  const p = container.querySelector('p');\n  expect(p.classList.contains('alert')).toBeTruthy();\n});\n\ntest('does not use the HTML \"class\" attribute literally', () => {\n  const { container } = render(<App />);\n  const p = container.querySelector('p');\n  // The DOM exposes it as `className` regardless, but we make sure\n  // the className landed correctly (not as some unknown attribute).\n  expect(p.className).toBe('alert');\n});",
+          "solution": {
+            "App.jsx": "export default function App() {\n  return <p className=\"alert\">Important notice</p>;\n}"
+          }
+        },
+        {
+          "id": "e81e84ce",
+          "aliases": [],
+          "title": "Inline Style — Font Size",
+          "order": 9,
+          "requirements": "Render an `<h1>` with the text `Big heading` and apply an inline style that sets its `font-size` to `48px`.\n\n> **Heads up:** the `style` attribute in JSX behaves differently than in plain HTML. It does **not** take a string of CSS — read the React docs (or experiment) to find the correct shape.",
+          "walkthrough": "1. `style={...}` is a JSX expression — the outer braces escape into JavaScript.\n2. The inner braces `{ ... }` are an object literal of CSS properties.\n3. CSS property names are written in `camelCase` (`fontSize`, not `font-size`).\n4. Either `fontSize: 48` or `fontSize: '48px'` works — React appends `px` to bare numbers for length properties.",
+          "files": {
+            "App.jsx": "export default function App() {\n  return <h1>Big heading</h1>;\n}"
+          },
+          "entry": "App.jsx",
+          "tests": "import App from './App.jsx';\nimport { render, screen } from './__rtl__.js';\n\ntest('renders the heading text', () => {\n  render(<App />);\n  const h = screen.getByRole('heading');\n  expect(h).toHaveTextContent('Big heading');\n});\n\ntest('heading has inline font-size of 48px', () => {\n  const { container } = render(<App />);\n  const h = container.querySelector('h1');\n  expect(h.style.fontSize).toBe('48px');\n});",
+          "solution": {
+            "App.jsx": "export default function App() {\n  return <h1 style={{ fontSize: '48px' }}>Big heading</h1>;\n}"
+          }
+        },
+        {
+          "id": "8f4c1875",
+          "aliases": [],
+          "title": "Inline Style — Multiple Properties",
+          "order": 10,
+          "requirements": "Render a `<div>` containing the text `Styled box` and apply an inline style with **all** of the following CSS properties:\n\n- `background-color`: `lightblue`\n- `color`: `darkblue`\n- `padding`: `16px`\n- `border-radius`: `8px`\n\n> **Heads up:** CSS property names with dashes need to be written differently in a JSX style object.",
+          "walkthrough": "1. The style object can hold as many properties as you like — it's a plain JavaScript object.\n2. Multi-word CSS properties (`background-color`, `border-radius`) become camelCase (`backgroundColor`, `borderRadius`).\n3. Values are strings, including units (`'16px'`, `'8px'`).\n4. For readability, place each property on its own line when there are several.",
+          "files": {
+            "App.jsx": "export default function App() {\n  return <div>Styled box</div>;\n}"
+          },
+          "entry": "App.jsx",
+          "tests": "import App from './App.jsx';\nimport { render } from './__rtl__.js';\n\ntest('renders the text \"Styled box\"', () => {\n  const { container } = render(<App />);\n  const div = container.querySelector('div');\n  expect(div).toHaveTextContent('Styled box');\n});\n\ntest('applies all four inline styles', () => {\n  const { container } = render(<App />);\n  const div = container.querySelector('div');\n  expect(div.style.backgroundColor).toBe('lightblue');\n  expect(div.style.color).toBe('darkblue');\n  expect(div.style.padding).toBe('16px');\n  expect(div.style.borderRadius).toBe('8px');\n});",
+          "solution": {
+            "App.jsx": "export default function App() {\n  return (\n    <div\n      style={{\n        backgroundColor: 'lightblue',\n        color: 'darkblue',\n        padding: '16px',\n        borderRadius: '8px',\n      }}\n    >\n      Styled box\n    </div>\n  );\n}"
           }
         }
       ]
     },
     {
-      "name": "state",
+      "name": "components-and-props",
       "order": 2,
       "questions": [
         {
-          "id": "d3f53965",
+          "id": "8db23d17",
           "aliases": [],
-          "title": "Counter",
+          "title": "Instantiate a Component",
           "order": 1,
-          "requirements": "Build a counter UI with three buttons and a display:\n\n- A button with text `+` that increments the count by 1.\n- A button with text `-` that decrements the count by 1.\n- A button with text `Reset` that sets the count back to 0.\n- A `<p>` element with `data-testid=\"count\"` showing the current count, starting at `0`.",
-          "walkthrough": "1. Three transitions on a single number — perfect for `useReducer`.\n2. The reducer is a pure function: `(state, action) => nextState`.\n3. Each button dispatches an action by `type`.\n4. `data-testid=\"count\"` lets the test target the display without coupling to layout.",
+          "requirements": "A `FooBar` component is already defined for you and is **read-only**. Your job is to render an instance of it from `App` so the page shows the text `foobar`.",
+          "walkthrough": "1. A React component is just a function that returns JSX.\n2. To *use* a component you write it like an HTML tag: `<FooBar />`.\n3. Component names must start with a capital letter so JSX treats them as components and not as built-in tags.",
           "files": {
-            "App.jsx": "import { useState } from 'react';\n\nexport default function App() {\n  return (\n    <div>\n      <p data-testid=\"count\">0</p>\n      <button>-</button>\n      <button>Reset</button>\n      <button>+</button>\n    </div>\n  );\n}"
+            "App.jsx": "// @lock\nfunction FooBar() {\n  return <span>foobar</span>;\n}\n// @endlock\n\nexport default function App() {\n  return (\n    <div>\n      {/* render <FooBar /> here */}\n    </div>\n  );\n}"
           },
           "entry": "App.jsx",
-          "tests": "import App from './App.jsx';\nimport { render, screen, fireEvent } from './__rtl__.js';\n\nfunction setup() {\n  render(<App />);\n  return {\n    count: () => screen.getByTestId('count').textContent,\n    inc:   () => fireEvent.click(screen.getByRole('button', { name: '+' })),\n    dec:   () => fireEvent.click(screen.getByRole('button', { name: '-' })),\n    reset: () => fireEvent.click(screen.getByRole('button', { name: 'Reset' })),\n  };\n}\n\ntest('starts at 0', () => {\n  const u = setup();\n  expect(u.count()).toBe('0');\n});\n\ntest('+ increments', () => {\n  const u = setup();\n  u.inc(); u.inc();\n  expect(u.count()).toBe('2');\n});\n\ntest('- decrements', () => {\n  const u = setup();\n  u.dec();\n  expect(u.count()).toBe('-1');\n});\n\ntest('Reset returns to 0', () => {\n  const u = setup();\n  u.inc(); u.inc(); u.inc();\n  u.reset();\n  expect(u.count()).toBe('0');\n});",
+          "tests": "import App from './App.jsx';\nimport { render } from './__rtl__.js';\n\ntest('renders the FooBar component', () => {\n  const { container } = render(<App />);\n  const span = container.querySelector('span');\n  expect(span).toBeTruthy();\n  expect(span).toHaveTextContent('foobar');\n});",
           "solution": {
-            "App.jsx": "import { useReducer } from 'react';\n\nfunction reducer(state, action) {\n  switch (action.type) {\n    case 'inc':   return state + 1;\n    case 'dec':   return state - 1;\n    case 'reset': return 0;\n    default:      return state;\n  }\n}\n\nexport default function App() {\n  const [count, dispatch] = useReducer(reducer, 0);\n  return (\n    <div>\n      <p data-testid=\"count\">{count}</p>\n      <button onClick={() => dispatch({ type: 'dec' })}>-</button>\n      <button onClick={() => dispatch({ type: 'reset' })}>Reset</button>\n      <button onClick={() => dispatch({ type: 'inc' })}>+</button>\n    </div>\n  );\n}"
+            "App.jsx": "// @lock\nfunction FooBar() {\n  return <span>foobar</span>;\n}\n// @endlock\n\nexport default function App() {\n  return (\n    <div>\n      <FooBar />\n    </div>\n  );\n}"
+          }
+        },
+        {
+          "id": "1426605e",
+          "aliases": [],
+          "title": "Define a Component",
+          "order": 2,
+          "requirements": "The `App` component is **read-only** and already renders `<HelloWorld />`. Define and export a `HelloWorld` component that returns a `<p>` with the text `Hello, world`.",
+          "walkthrough": "1. A component is a function that **returns JSX**.\n2. We `export` it (named export) so the test can import it directly.\n3. `App` is locked: it imports `HelloWorld` from the same file and renders it.",
+          "files": {
+            "App.jsx": "export function HelloWorld() {\n  // build me\n}\n\n// @lock\nexport default function App() {\n  return (\n    <main>\n      <HelloWorld />\n    </main>\n  );\n}\n// @endlock"
+          },
+          "entry": "App.jsx",
+          "tests": "import App, { HelloWorld } from './App.jsx';\nimport { render } from './__rtl__.js';\n\ntest('HelloWorld renders \"Hello, world\" in a <p>', () => {\n  const { container } = render(<HelloWorld />);\n  const p = container.querySelector('p');\n  expect(p).toBeTruthy();\n  expect(p).toHaveTextContent('Hello, world');\n});\n\ntest('App renders HelloWorld', () => {\n  const { container } = render(<App />);\n  expect(container).toHaveTextContent('Hello, world');\n});",
+          "solution": {
+            "App.jsx": "export function HelloWorld() {\n  return <p>Hello, world</p>;\n}\n\nexport default function App() {\n  return (\n    <main>\n      <HelloWorld />\n    </main>\n  );\n}"
+          }
+        },
+        {
+          "id": "dba9582c",
+          "aliases": [],
+          "title": "A Component With One Prop",
+          "order": 3,
+          "requirements": "Define a `Message` component that accepts a single prop named `text` and renders it inside a `<div>`.\n\nThe `App` component is **read-only** and already passes a value to the `text` prop.",
+          "walkthrough": "1. Props are passed to a component as the first function argument — a single object.\n2. Destructuring `{ text }` pulls out just the prop you care about.\n3. Inside JSX, `{text}` evaluates the variable and inserts it as text content.",
+          "files": {
+            "App.jsx": "export function Message(/* props go here */) {\n  // build me\n}\n\n// @lock\nexport default function App() {\n  return <Message text=\"Welcome aboard!\" />;\n}\n// @endlock"
+          },
+          "entry": "App.jsx",
+          "tests": "import App, { Message } from './App.jsx';\nimport { render } from './__rtl__.js';\n\ntest('Message renders its text prop inside a <div>', () => {\n  const { container } = render(<Message text=\"Hi there\" />);\n  const div = container.querySelector('div');\n  expect(div).toBeTruthy();\n  expect(div).toHaveTextContent('Hi there');\n});\n\ntest('App passes \"Welcome aboard!\" through the prop', () => {\n  const { container } = render(<App />);\n  expect(container).toHaveTextContent('Welcome aboard!');\n});",
+          "solution": {
+            "App.jsx": "export function Message({ text }) {\n  return <div>{text}</div>;\n}\n\nexport default function App() {\n  return <Message text=\"Welcome aboard!\" />;\n}"
+          }
+        },
+        {
+          "id": "5829863e",
+          "aliases": [],
+          "title": "Reusing a Component With Different Props",
+          "order": 4,
+          "requirements": "1. Define a `HelloName` component that takes a `name` prop and renders `Hello, <name>` inside a `<div>`.\n2. In `App`, render **two** instances of `HelloName`: one for `\"Alice\"` and one for `\"Bob\"`.",
+          "walkthrough": "1. Once a component takes props, the same definition can render any number of variations.\n2. Each `<HelloName name=\"...\" />` is its own instance with its own props.\n3. This is the heart of React: small, reusable building blocks composed by passing data through props.",
+          "files": {
+            "App.jsx": "export function HelloName(/* props */) {\n  // build me\n}\n\nexport default function App() {\n  return (\n    <section>\n      {/* render two <HelloName /> instances here */}\n    </section>\n  );\n}"
+          },
+          "entry": "App.jsx",
+          "tests": "import App, { HelloName } from './App.jsx';\nimport { render } from './__rtl__.js';\n\ntest('HelloName renders \"Hello, <name>\" in a <div>', () => {\n  const { container } = render(<HelloName name=\"Carol\" />);\n  const div = container.querySelector('div');\n  expect(div).toBeTruthy();\n  expect(div).toHaveTextContent('Hello, Carol');\n});\n\ntest('App renders one greeting for Alice and one for Bob', () => {\n  const { container } = render(<App />);\n  const text = container.textContent || '';\n  expect(text.indexOf('Hello, Alice') !== -1).toBeTruthy();\n  expect(text.indexOf('Hello, Bob') !== -1).toBeTruthy();\n});\n\ntest('App contains two <div> greetings', () => {\n  const { container } = render(<App />);\n  const divs = container.querySelectorAll('div');\n  expect(divs.length >= 2).toBeTruthy();\n});",
+          "solution": {
+            "App.jsx": "export function HelloName({ name }) {\n  return <div>Hello, {name}</div>;\n}\n\nexport default function App() {\n  return (\n    <section>\n      <HelloName name=\"Alice\" />\n      <HelloName name=\"Bob\" />\n    </section>\n  );\n}"
+          }
+        },
+        {
+          "id": "725a5759",
+          "aliases": [],
+          "title": "Compute Inside a Component",
+          "order": 5,
+          "requirements": "1. Define a `FindLowest` component that accepts two number props named `n1` and `n2`, and renders the smaller of the two values inside a `<div>`.\n2. In `App`, render an instance of `FindLowest`. Pass `7` as the first number and `3` as the second number. The output should display `3`.\n\n> **Hint:** the `Math` global has a built-in method for finding the minimum of several numbers.",
+          "walkthrough": "1. To pass a *number* (or any non-string value) as a prop, wrap it in `{}`: `n1={7}`.\n2. Inside the component, props are plain JavaScript values — call `Math.min` on them like any function.\n3. The expression inside JSX `{}` is evaluated each render, so the displayed value always matches the latest props.",
+          "files": {
+            "App.jsx": "export function FindLowest(/* props */) {\n  // build me\n}\n\nexport default function App() {\n  return (\n    <div>\n      {/* render <FindLowest n1={7} n2={3} /> here */}\n    </div>\n  );\n}"
+          },
+          "entry": "App.jsx",
+          "tests": "import App, { FindLowest } from './App.jsx';\nimport { render } from './__rtl__.js';\n\ntest('FindLowest renders the smaller of two numbers', () => {\n  const { container } = render(<FindLowest n1={10} n2={4} />);\n  const div = container.querySelector('div');\n  expect(div).toBeTruthy();\n  expect(div).toHaveTextContent('4');\n});\n\ntest('FindLowest works when n1 is the smaller value', () => {\n  const { container } = render(<FindLowest n1={2} n2={9} />);\n  const div = container.querySelector('div');\n  expect(div).toHaveTextContent('2');\n});\n\ntest('App renders the smaller of 7 and 3 (which is 3)', () => {\n  const { container } = render(<App />);\n  expect(container).toHaveTextContent('3');\n});",
+          "solution": {
+            "App.jsx": "export function FindLowest({ n1, n2 }) {\n  return <div>{Math.min(n1, n2)}</div>;\n}\n\nexport default function App() {\n  return (\n    <div>\n      <FindLowest n1={7} n2={3} />\n    </div>\n  );\n}"
+          }
+        },
+        {
+          "id": "7398bd5a",
+          "aliases": [],
+          "title": "A Configurable Box",
+          "order": 6,
+          "requirements": "1. Define a `Box` component that accepts three props named `width`, `height`, and `background`, and renders a `<div>` whose inline style applies all three. The box must also be displayed as an inline block so two boxes can sit side by side.\n2. In `App`, render **two** `Box` instances:\n   - The first: width `80`, height `80`, background `tomato`.\n   - The second: width `120`, height `60`, background `steelblue`.\n\n> **Hint:** numeric length values can be passed straight to a style object — React appends `px` for you.",
+          "walkthrough": "1. The shorthand `{ width, height, background }` in the style object is the same as `{ width: width, height: height, background: background }`.\n2. `display: 'inline-block'` lets the boxes sit on the same line; `display: 'block'` would stack them.\n3. Reusing the same `Box` component with different prop values is the same idea as `<HelloName />` from the previous lesson — props let one component cover many variations.",
+          "files": {
+            "App.jsx": "export function Box(/* props */) {\n  // build me\n}\n\nexport default function App() {\n  return (\n    <div>\n      {/* render two <Box /> instances here */}\n    </div>\n  );\n}"
+          },
+          "entry": "App.jsx",
+          "tests": "import App, { Box } from './App.jsx';\nimport { render } from './__rtl__.js';\n\ntest('Box applies width, height, background, and inline-block', () => {\n  const { container } = render(\n    <Box width={50} height={40} background=\"red\" />,\n  );\n  const div = container.querySelector('div');\n  expect(div).toBeTruthy();\n  expect(div.style.width).toBe('50px');\n  expect(div.style.height).toBe('40px');\n  expect(div.style.background || div.style.backgroundColor).toBe('red');\n  expect(div.style.display).toBe('inline-block');\n});\n\ntest('App renders two boxes with the specified styles', () => {\n  const { container } = render(<App />);\n  const boxes = container.querySelectorAll('div > div');\n  expect(boxes.length >= 2).toBeTruthy();\n\n  const [first, second] = boxes;\n  expect(first.style.width).toBe('80px');\n  expect(first.style.height).toBe('80px');\n  expect(first.style.background || first.style.backgroundColor).toBe('tomato');\n\n  expect(second.style.width).toBe('120px');\n  expect(second.style.height).toBe('60px');\n  expect(second.style.background || second.style.backgroundColor).toBe(\n    'steelblue',\n  );\n});",
+          "solution": {
+            "App.jsx": "export function Box({ width, height, background }) {\n  return (\n    <div\n      style={{\n        width,\n        height,\n        background,\n        display: 'inline-block',\n      }}\n    />\n  );\n}\n\nexport default function App() {\n  return (\n    <div>\n      <Box width={80} height={80} background=\"tomato\" />\n      <Box width={120} height={60} background=\"steelblue\" />\n    </div>\n  );\n}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "state-and-event-listeners",
+      "order": 3,
+      "questions": [
+        {
+          "id": "8211652a",
+          "aliases": [],
+          "title": "Your First State Variable",
+          "order": 1,
+          "requirements": "Define a state variable named `count` with an initial value of `10`, and display it inside the `<p>` element.\n\n> **Hint:** React's `useState` hook is already imported for you.",
+          "walkthrough": "1. `useState(initial)` returns a pair: the current value, and a setter function.\n2. We only need the value here, so we destructure just the first slot: `const [count]`.\n3. The initial value `10` is used on the first render and then ignored on subsequent renders.",
+          "files": {
+            "App.jsx": "import { useState } from 'react';\n\nexport default function App() {\n  // declare your state here\n\n  return (\n    <p data-testid=\"count\"></p>\n  );\n}"
+          },
+          "entry": "App.jsx",
+          "tests": "import App from './App.jsx';\nimport { render, screen } from './__rtl__.js';\n\ntest('renders the initial count of 10', () => {\n  render(<App />);\n  const p = screen.getByTestId('count');\n  expect(p).toHaveTextContent('10');\n});",
+          "solution": {
+            "App.jsx": "import { useState } from 'react';\n\nexport default function App() {\n  const [count] = useState(10);\n  return <p data-testid=\"count\">{count}</p>;\n}"
+          }
+        },
+        {
+          "id": "c2fc46a7",
+          "aliases": [],
+          "title": "Your First Click Handler",
+          "order": 2,
+          "requirements": "The state and the button are already provided and **locked**. Wire up the button so that clicking it updates the state to the string `I'm clicked!`.",
+          "walkthrough": "1. React event handlers are passed as props that start with `on`, e.g. `onClick`.\n2. The value must be a *function* — usually an arrow function so it doesn't run until clicked.\n3. Calling the setter (`setMessage`) tells React to re-render with the new state.",
+          "files": {
+            "App.jsx": "import { useState } from 'react';\n\nexport default function App() {\n  // @lock\n  const [message, setMessage] = useState('Click the button');\n  // @endlock\n\n  return (\n    <div>\n      <p data-testid=\"message\">{message}</p>\n      <button>Click me</button>\n    </div>\n  );\n}"
+          },
+          "entry": "App.jsx",
+          "tests": "import App from './App.jsx';\nimport { render, screen, fireEvent } from './__rtl__.js';\n\ntest('shows the initial message before clicking', () => {\n  render(<App />);\n  expect(screen.getByTestId('message')).toHaveTextContent('Click the button');\n});\n\ntest('clicking the button updates the message', () => {\n  render(<App />);\n  fireEvent.click(screen.getByRole('button', { name: 'Click me' }));\n  expect(screen.getByTestId('message')).toHaveTextContent(\"I'm clicked!\");\n});",
+          "solution": {
+            "App.jsx": "import { useState } from 'react';\n\nexport default function App() {\n  // @lock\n  const [message, setMessage] = useState('Click the button');\n  // @endlock\n\n  return (\n    <div>\n      <p data-testid=\"message\">{message}</p>\n      <button onClick={() => setMessage(\"I'm clicked!\")}>Click me</button>\n    </div>\n  );\n}"
+          }
+        },
+        {
+          "id": "10f0ca58",
+          "aliases": [],
+          "title": "Two Buttons, One State",
+          "order": 3,
+          "requirements": "Define a state variable named `color` that starts as an empty string.\n\nWire the two existing buttons so that:\n\n- Clicking **Red** sets `color` to `\"red\"`.\n- Clicking **Blue** sets `color` to `\"blue\"`.\n\nThe current value of `color` should be displayed inside the `<p data-testid=\"color\">` element.",
+          "walkthrough": "1. Two handlers, one state: each button calls `setColor` with a different literal.\n2. React re-renders the whole component when state changes, so the `<p>` always reflects the latest value.\n3. This pattern scales: any number of buttons can write to the same piece of state.",
+          "files": {
+            "App.jsx": "import { useState } from 'react';\n\nexport default function App() {\n  // declare the color state here\n\n  return (\n    <div>\n      <p data-testid=\"color\"></p>\n      <button>Red</button>\n      <button>Blue</button>\n    </div>\n  );\n}"
+          },
+          "entry": "App.jsx",
+          "tests": "import App from './App.jsx';\nimport { render, screen, fireEvent } from './__rtl__.js';\n\ntest('color starts empty', () => {\n  render(<App />);\n  expect(screen.getByTestId('color')).toHaveTextContent('');\n});\n\ntest('clicking Red sets the color to \"red\"', () => {\n  render(<App />);\n  fireEvent.click(screen.getByRole('button', { name: 'Red' }));\n  expect(screen.getByTestId('color')).toHaveTextContent('red');\n});\n\ntest('clicking Blue sets the color to \"blue\"', () => {\n  render(<App />);\n  fireEvent.click(screen.getByRole('button', { name: 'Blue' }));\n  expect(screen.getByTestId('color')).toHaveTextContent('blue');\n});\n\ntest('clicking Red then Blue ends with \"blue\"', () => {\n  render(<App />);\n  fireEvent.click(screen.getByRole('button', { name: 'Red' }));\n  fireEvent.click(screen.getByRole('button', { name: 'Blue' }));\n  expect(screen.getByTestId('color')).toHaveTextContent('blue');\n});",
+          "solution": {
+            "App.jsx": "import { useState } from 'react';\n\nexport default function App() {\n  const [color, setColor] = useState('');\n\n  return (\n    <div>\n      <p data-testid=\"color\">{color}</p>\n      <button onClick={() => setColor('red')}>Red</button>\n      <button onClick={() => setColor('blue')}>Blue</button>\n    </div>\n  );\n}"
+          }
+        },
+        {
+          "id": "e30ed759",
+          "aliases": [],
+          "title": "Pass State Through Props",
+          "order": 4,
+          "requirements": "The `Box` component is already defined and **locked** — it accepts a `background` prop and renders a 100×100 square with that background color.\n\nIn `App`:\n\n1. Create a state variable named `color` that starts as `\"white\"`.\n2. Render three buttons labelled **Red**, **Blue**, and **White**. Each one should set `color` to its corresponding lowercase string when clicked.\n3. Render a single `<Box />`, passing the current `color` value to its `background` prop, so the box's background updates in response to the buttons.",
+          "walkthrough": "1. State lives in `App`, but the visual change happens inside `<Box />` — we bridge them with a prop.\n2. Each button's `onClick` updates the parent's state; React re-renders `App`, which passes the new value down to `Box`.\n3. This is the classic React data flow: **state up, props down.**",
+          "files": {
+            "App.jsx": "import { useState } from 'react';\n\n// @lock\nexport function Box({ background }) {\n  return (\n    <div\n      data-testid=\"box\"\n      style={{ width: 100, height: 100, background }}\n    />\n  );\n}\n// @endlock\n\nexport default function App() {\n  // your code here\n\n  return (\n    <div>\n      {/* buttons and <Box /> go here */}\n    </div>\n  );\n}"
+          },
+          "entry": "App.jsx",
+          "tests": "import App from './App.jsx';\nimport { render, screen, fireEvent } from './__rtl__.js';\n\ntest('box starts white', () => {\n  render(<App />);\n  const box = screen.getByTestId('box');\n  expect(box.style.background || box.style.backgroundColor).toBe('white');\n});\n\ntest('clicking Red turns the box red', () => {\n  render(<App />);\n  fireEvent.click(screen.getByRole('button', { name: 'Red' }));\n  const box = screen.getByTestId('box');\n  expect(box.style.background || box.style.backgroundColor).toBe('red');\n});\n\ntest('clicking Blue turns the box blue', () => {\n  render(<App />);\n  fireEvent.click(screen.getByRole('button', { name: 'Blue' }));\n  const box = screen.getByTestId('box');\n  expect(box.style.background || box.style.backgroundColor).toBe('blue');\n});\n\ntest('clicking White after Red turns the box white again', () => {\n  render(<App />);\n  fireEvent.click(screen.getByRole('button', { name: 'Red' }));\n  fireEvent.click(screen.getByRole('button', { name: 'White' }));\n  const box = screen.getByTestId('box');\n  expect(box.style.background || box.style.backgroundColor).toBe('white');\n});",
+          "solution": {
+            "App.jsx": "import { useState } from 'react';\n\n// @lock\nexport function Box({ background }) {\n  return (\n    <div\n      data-testid=\"box\"\n      style={{ width: 100, height: 100, background }}\n    />\n  );\n}\n// @endlock\n\nexport default function App() {\n  const [color, setColor] = useState('white');\n\n  return (\n    <div>\n      <button onClick={() => setColor('red')}>Red</button>\n      <button onClick={() => setColor('blue')}>Blue</button>\n      <button onClick={() => setColor('white')}>White</button>\n      <Box background={color} />\n    </div>\n  );\n}"
+          }
+        },
+        {
+          "id": "f2b29e7c",
+          "aliases": [],
+          "title": "React to Mouse Events",
+          "order": 5,
+          "requirements": "A 50×50 `<div>` with a border is already in place. Make it change color in response to the cursor:\n\n- When the mouse moves **onto** the div, its background should turn `red`.\n- When the mouse moves **off** the div, its background should turn `blue`.\n\nUse a single state variable to track the current color.\n\n> **Hint:** React provides event props for when the cursor enters or leaves an element.",
+          "walkthrough": "1. `onMouseOver` fires when the cursor enters the element.\n2. `onMouseOut` fires when it leaves.\n3. Both handlers update the same state variable, and the style object reads from it — so the visual stays in sync with the cursor.\n4. (`onMouseEnter` / `onMouseLeave` are close cousins that don't fire on child elements; for a leaf div like ours, either pair works.)",
+          "files": {
+            "App.jsx": "import { useState } from 'react';\n\nexport default function App() {\n  // track the background color in state\n\n  return (\n    <div\n      data-testid=\"hoverbox\"\n      style={{\n        width: 50,\n        height: 50,\n        border: '1px solid black',\n        background: 'blue',\n      }}\n    />\n  );\n}"
+          },
+          "entry": "App.jsx",
+          "tests": "import App from './App.jsx';\nimport { render, screen } from './__rtl__.js';\n\nfunction dispatch(el, type) {\n  el.dispatchEvent(new MouseEvent(type, { bubbles: true }));\n}\n\ntest('starts blue', () => {\n  render(<App />);\n  const box = screen.getByTestId('hoverbox');\n  expect(box.style.background || box.style.backgroundColor).toBe('blue');\n});\n\ntest('turns red when the mouse enters', () => {\n  render(<App />);\n  const box = screen.getByTestId('hoverbox');\n  dispatch(box, 'mouseover');\n  expect(box.style.background || box.style.backgroundColor).toBe('red');\n});\n\ntest('returns to blue when the mouse leaves', () => {\n  render(<App />);\n  const box = screen.getByTestId('hoverbox');\n  dispatch(box, 'mouseover');\n  dispatch(box, 'mouseout');\n  expect(box.style.background || box.style.backgroundColor).toBe('blue');\n});",
+          "solution": {
+            "App.jsx": "import { useState } from 'react';\n\nexport default function App() {\n  const [color, setColor] = useState('blue');\n\n  return (\n    <div\n      data-testid=\"hoverbox\"\n      onMouseOver={() => setColor('red')}\n      onMouseOut={() => setColor('blue')}\n      style={{\n        width: 50,\n        height: 50,\n        border: '1px solid black',\n        background: color,\n      }}\n    />\n  );\n}"
+          }
+        },
+        {
+          "id": "a9c82c0a",
+          "aliases": [],
+          "title": "Increment by Different Amounts",
+          "order": 6,
+          "requirements": "Build a small \"price\" UI from scratch in `App`:\n\n1. Create a state variable named `price` that starts at `0`.\n2. Render three buttons labelled `+0.5`, `+1`, and `+2`.\n3. Clicking each button should add its labelled amount to `price`.\n4. Display the current `price` inside a `<p data-testid=\"price\">`.",
+          "walkthrough": "1. To compute the next state from the current state, read the current value (`price`) and pass the new value to the setter.\n2. Each button has its own handler with its own constant amount, but they all share the same setter.\n3. For more robust updates that depend on the previous state, you can pass a function: `setPrice(prev => prev + 1)`.",
+          "files": {
+            "App.jsx": "import { useState } from 'react';\n\nexport default function App() {\n  // build me\n  return <div></div>;\n}"
+          },
+          "entry": "App.jsx",
+          "tests": "import App from './App.jsx';\nimport { render, screen, fireEvent } from './__rtl__.js';\n\ntest('price starts at 0', () => {\n  render(<App />);\n  expect(screen.getByTestId('price')).toHaveTextContent('0');\n});\n\ntest('clicking +1 increases price by 1', () => {\n  render(<App />);\n  fireEvent.click(screen.getByRole('button', { name: '+1' }));\n  expect(screen.getByTestId('price')).toHaveTextContent('1');\n});\n\ntest('clicking +2 twice increases price to 4', () => {\n  render(<App />);\n  fireEvent.click(screen.getByRole('button', { name: '+2' }));\n  fireEvent.click(screen.getByRole('button', { name: '+2' }));\n  expect(screen.getByTestId('price')).toHaveTextContent('4');\n});\n\ntest('mixed clicks add up: +0.5, +1, +2 -> 3.5', () => {\n  render(<App />);\n  fireEvent.click(screen.getByRole('button', { name: '+0.5' }));\n  fireEvent.click(screen.getByRole('button', { name: '+1' }));\n  fireEvent.click(screen.getByRole('button', { name: '+2' }));\n  expect(screen.getByTestId('price')).toHaveTextContent('3.5');\n});",
+          "solution": {
+            "App.jsx": "import { useState } from 'react';\n\nexport default function App() {\n  const [price, setPrice] = useState(0);\n\n  return (\n    <div>\n      <p data-testid=\"price\">{price}</p>\n      <button onClick={() => setPrice(price + 0.5)}>+0.5</button>\n      <button onClick={() => setPrice(price + 1)}>+1</button>\n      <button onClick={() => setPrice(price + 2)}>+2</button>\n    </div>\n  );\n}"
+          }
+        },
+        {
+          "id": "4fc1edac",
+          "aliases": [],
+          "title": "A Self-Contained Counter Component",
+          "order": 7,
+          "requirements": "Build a `Counter` component that owns its own state:\n\n1. Internally, hold a state variable named `count` that starts at `0`.\n2. Render a `<p data-testid=\"count\">` displaying the current count.\n3. Render a `+` button that increases `count` by 1.\n4. Render a `-` button that decreases `count` by 1.\n\n`App` should render an instance of `<Counter />`.",
+          "walkthrough": "1. State and the elements that use it can live entirely inside a child component — `App` doesn't need to know about `count`.\n2. Each instance of `<Counter />` gets its own independent state, even if you render several.\n3. This **encapsulation** is the foundation of reusable components: the parent provides where it lives in the tree, the component provides the behaviour.",
+          "files": {
+            "App.jsx": "import { useState } from 'react';\n\nexport function Counter() {\n  // build me\n}\n\nexport default function App() {\n  return <Counter />;\n}"
+          },
+          "entry": "App.jsx",
+          "tests": "import App, { Counter } from './App.jsx';\nimport { render, screen, fireEvent } from './__rtl__.js';\n\ntest('counter starts at 0', () => {\n  render(<Counter />);\n  expect(screen.getByTestId('count')).toHaveTextContent('0');\n});\n\ntest('+ increments the count', () => {\n  render(<Counter />);\n  fireEvent.click(screen.getByRole('button', { name: '+' }));\n  fireEvent.click(screen.getByRole('button', { name: '+' }));\n  expect(screen.getByTestId('count')).toHaveTextContent('2');\n});\n\ntest('- decrements the count', () => {\n  render(<Counter />);\n  fireEvent.click(screen.getByRole('button', { name: '-' }));\n  expect(screen.getByTestId('count')).toHaveTextContent('-1');\n});\n\ntest('App renders a Counter', () => {\n  render(<App />);\n  expect(screen.getByTestId('count')).toHaveTextContent('0');\n});",
+          "solution": {
+            "App.jsx": "import { useState } from 'react';\n\nexport function Counter() {\n  const [count, setCount] = useState(0);\n\n  return (\n    <div>\n      <p data-testid=\"count\">{count}</p>\n      <button onClick={() => setCount(count - 1)}>-</button>\n      <button onClick={() => setCount(count + 1)}>+</button>\n    </div>\n  );\n}\n\nexport default function App() {\n  return <Counter />;\n}"
+          }
+        },
+        {
+          "id": "199cc14b",
+          "aliases": [],
+          "title": "Roll a Die",
+          "order": 8,
+          "requirements": "A `Dice` component is partially built: it renders a 80×80 `<div>` with the dice face inside, plus a **Roll** button. The styling is locked.\n\nYour job:\n\n1. Add a state variable named `value` that holds the current dice face. Start it at `1`.\n2. Wire the **Roll** button so that clicking it sets `value` to a random integer from `1` to `6` (inclusive).\n3. Display `value` inside the dice div.\n4. Color the displayed number based on the current value:\n   - If the value is `1`, the text color must be `red`.\n   - If the value is `6`, the text color must be `green`.\n   - For any other value, leave the color at the default (`black`).\n\n> **Hint:** `Math.floor(Math.random() * 6) + 1` gives you a random integer from 1 to 6.",
+          "walkthrough": "1. The state holds the *data* (the current face); the JSX *derives* the color from that data each render.\n2. A ternary chain is a tidy way to map a value to one of three outputs.\n3. `Math.floor(Math.random() * 6) + 1` rolls a fair die: `Math.random()` returns `[0, 1)`, multiplied by 6 gives `[0, 6)`, the floor gives `0..5`, and `+ 1` shifts to `1..6`.",
+          "files": {
+            "App.jsx": "import { useState } from 'react';\n\nexport function Dice() {\n  // declare your state here\n\n  // @lock\n  const wrapperStyle = {\n    width: 80,\n    height: 80,\n    border: '2px solid black',\n    borderRadius: 8,\n    display: 'flex',\n    alignItems: 'center',\n    justifyContent: 'center',\n    fontSize: 32,\n    fontWeight: 'bold',\n  };\n  // @endlock\n\n  return (\n    <div>\n      <div data-testid=\"face\" style={{ ...wrapperStyle, color: /* derive from value */ undefined }}>\n        {/* display value here */}\n      </div>\n      <button>Roll</button>\n    </div>\n  );\n}\n\nexport default function App() {\n  return <Dice />;\n}"
+          },
+          "entry": "App.jsx",
+          "tests": "import App, { Dice } from './App.jsx';\nimport { render, screen, fireEvent } from './__rtl__.js';\n\ntest('dice starts showing 1 in red', () => {\n  render(<Dice />);\n  const face = screen.getByTestId('face');\n  expect(face).toHaveTextContent('1');\n  expect(face.style.color).toBe('red');\n});\n\ntest('clicking Roll keeps the value within 1..6 inclusive', () => {\n  render(<Dice />);\n  for (let i = 0; i < 20; i++) {\n    fireEvent.click(screen.getByRole('button', { name: 'Roll' }));\n    const text = screen.getByTestId('face').textContent.trim();\n    const n = Number(text);\n    expect(Number.isInteger(n)).toBeTruthy();\n    expect(n >= 1 && n <= 6).toBeTruthy();\n  }\n});\n\ntest('color is green when value is 6, red when 1, black otherwise', () => {\n  // Stub Math.random so we control the roll.\n  const orig = Math.random;\n  try {\n    render(<Dice />);\n    const face = screen.getByTestId('face');\n    const btn = screen.getByRole('button', { name: 'Roll' });\n\n    Math.random = () => 5 / 6; // floor(5) + 1 = 6\n    fireEvent.click(btn);\n    expect(face).toHaveTextContent('6');\n    expect(face.style.color).toBe('green');\n\n    Math.random = () => 0;     // floor(0) + 1 = 1\n    fireEvent.click(btn);\n    expect(face).toHaveTextContent('1');\n    expect(face.style.color).toBe('red');\n\n    Math.random = () => 2.5 / 6; // floor(2.5) + 1 = 3\n    fireEvent.click(btn);\n    expect(face).toHaveTextContent('3');\n    expect(face.style.color).toBe('black');\n  } finally {\n    Math.random = orig;\n  }\n});",
+          "solution": {
+            "App.jsx": "import { useState } from 'react';\n\nexport function Dice() {\n  const [value, setValue] = useState(1);\n\n  // @lock\n  const wrapperStyle = {\n    width: 80,\n    height: 80,\n    border: '2px solid black',\n    borderRadius: 8,\n    display: 'flex',\n    alignItems: 'center',\n    justifyContent: 'center',\n    fontSize: 32,\n    fontWeight: 'bold',\n  };\n  // @endlock\n\n  const color = value === 1 ? 'red' : value === 6 ? 'green' : 'black';\n  const roll = () => setValue(Math.floor(Math.random() * 6) + 1);\n\n  return (\n    <div>\n      <div data-testid=\"face\" style={{ ...wrapperStyle, color }}>\n        {value}\n      </div>\n      <button onClick={roll}>Roll</button>\n    </div>\n  );\n}\n\nexport default function App() {\n  return <Dice />;\n}"
           }
         }
       ]
