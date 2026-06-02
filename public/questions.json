@@ -419,7 +419,7 @@
       ]
     },
     {
-      "name": "revision-jsx-and-components",
+      "name": "revision",
       "order": 4,
       "questions": [
         {
@@ -677,6 +677,134 @@
           "solution": {
             "App.jsx": "export function Circle(props) {\n  return (\n    <div\n      style={{\n        width: props.size,\n        height: props.size,\n        backgroundColor: props.color,\n        border: props.border,\n        borderRadius: '50%',\n        display: 'inline-block',\n      }}\n    />\n  );\n}\n\nexport default function App() {\n  return (\n    <div>\n      <Circle size={60} color=\"gold\" border=\"2px dashed black\" />\n      <Circle size={100} color=\"seagreen\" border=\"4px solid navy\" />\n    </div>\n  );\n}"
           }
+        },
+        {
+          "id": "5a27c237",
+          "aliases": [],
+          "title": "A First State Variable — Temperature",
+          "order": 17,
+          "requirements": "Define a state variable named `temperature` with an initial value of `25`, and display it inside the `<span>` element.\n\n> **Hint:** `useState` is already imported.",
+          "walkthrough": "1. `useState(25)` returns a pair: the current value and a setter. We only read the value here.\n2. Array destructuring `const [temperature]` keeps just the first slot.\n3. Inside JSX, `{temperature}` interpolates the state value as text.",
+          "files": {
+            "App.jsx": "import { useState } from 'react';\n\nexport default function App() {\n  // declare your state here\n\n  return (\n    <p>\n      Current: <span data-testid=\"temp\"></span>°C\n    </p>\n  );\n}"
+          },
+          "entry": "App.jsx",
+          "tests": "import App from './App.jsx';\nimport { render, screen } from './__rtl__.js';\n\ntest('renders the initial temperature of 25', () => {\n  render(<App />);\n  expect(screen.getByTestId('temp')).toHaveTextContent('25');\n});",
+          "solution": {
+            "App.jsx": "import { useState } from 'react';\n\nexport default function App() {\n  const [temperature] = useState(25);\n\n  return (\n    <p>\n      Current: <span data-testid=\"temp\">{temperature}</span>°C\n    </p>\n  );\n}"
+          }
+        },
+        {
+          "id": "bf8e25a5",
+          "aliases": [],
+          "title": "Click Handler — Change Mood",
+          "order": 18,
+          "requirements": "The state and the button are already provided and **locked**. Wire up the button so that clicking it updates the state to the string `excited`.",
+          "walkthrough": "1. The `onClick` prop expects a *function* — usually an arrow function so it only runs on click.\n2. Calling `setMood('excited')` schedules a re-render with the new state value.\n3. Because the `<p>` interpolates `{mood}`, React redraws it with the new text after the state update.",
+          "files": {
+            "App.jsx": "import { useState } from 'react';\n\nexport default function App() {\n  // @lock\n  const [mood, setMood] = useState('neutral');\n  // @endlock\n\n  return (\n    <div>\n      <p data-testid=\"mood\">{mood}</p>\n      <button>Cheer me up</button>\n    </div>\n  );\n}"
+          },
+          "entry": "App.jsx",
+          "tests": "import App from './App.jsx';\nimport { render, screen, fireEvent } from './__rtl__.js';\n\ntest('starts with mood \"neutral\"', () => {\n  render(<App />);\n  expect(screen.getByTestId('mood')).toHaveTextContent('neutral');\n});\n\ntest('clicking the button changes mood to \"excited\"', () => {\n  render(<App />);\n  fireEvent.click(screen.getByRole('button', { name: 'Cheer me up' }));\n  expect(screen.getByTestId('mood')).toHaveTextContent('excited');\n});",
+          "solution": {
+            "App.jsx": "import { useState } from 'react';\n\nexport default function App() {\n  // @lock\n  const [mood, setMood] = useState('neutral');\n  // @endlock\n\n  return (\n    <div>\n      <p data-testid=\"mood\">{mood}</p>\n      <button onClick={() => setMood('excited')}>Cheer me up</button>\n    </div>\n  );\n}"
+          }
+        },
+        {
+          "id": "c1093759",
+          "aliases": [],
+          "title": "Three Buttons, One Status",
+          "order": 19,
+          "requirements": "Build a small status display with three buttons:\n\n1. A state variable named `status` that starts as the string `idle`.\n2. A `<p data-testid=\"status\">` that shows the current value of `status`.\n3. Three buttons labelled **Play**, **Pause**, and **Stop**. Clicking each one must set `status` to its corresponding lowercase verb (`'play'`, `'pause'`, `'stop'`).",
+          "walkthrough": "1. Multiple buttons can all update the **same** state variable, each one setting it to a different value.\n2. Each `onClick` is an independent function — the buttons don't know about each other; they just call the setter with their own argument.\n3. React re-renders the `<p>` whenever `status` changes, so the display always reflects the latest click.",
+          "files": {
+            "App.jsx": "import { useState } from 'react';\n\nexport default function App() {\n  // declare your state here\n\n  return (\n    <div>\n      {/* render the status display and three buttons here */}\n    </div>\n  );\n}"
+          },
+          "entry": "App.jsx",
+          "tests": "import App from './App.jsx';\nimport { render, screen, fireEvent } from './__rtl__.js';\n\ntest('starts in the idle state', () => {\n  render(<App />);\n  expect(screen.getByTestId('status')).toHaveTextContent('idle');\n});\n\ntest('clicking Play sets status to \"play\"', () => {\n  render(<App />);\n  fireEvent.click(screen.getByRole('button', { name: 'Play' }));\n  expect(screen.getByTestId('status')).toHaveTextContent('play');\n});\n\ntest('clicking Pause sets status to \"pause\"', () => {\n  render(<App />);\n  fireEvent.click(screen.getByRole('button', { name: 'Pause' }));\n  expect(screen.getByTestId('status')).toHaveTextContent('pause');\n});\n\ntest('clicking Stop after Play sets status to \"stop\"', () => {\n  render(<App />);\n  fireEvent.click(screen.getByRole('button', { name: 'Play' }));\n  fireEvent.click(screen.getByRole('button', { name: 'Stop' }));\n  expect(screen.getByTestId('status')).toHaveTextContent('stop');\n});",
+          "solution": {
+            "App.jsx": "import { useState } from 'react';\n\nexport default function App() {\n  const [status, setStatus] = useState('idle');\n\n  return (\n    <div>\n      <p data-testid=\"status\">{status}</p>\n      <button onClick={() => setStatus('play')}>Play</button>\n      <button onClick={() => setStatus('pause')}>Pause</button>\n      <button onClick={() => setStatus('stop')}>Stop</button>\n    </div>\n  );\n}"
+          }
+        },
+        {
+          "id": "9190ca5a",
+          "aliases": [],
+          "title": "Hide a Visible Message",
+          "order": 20,
+          "requirements": "A `<div data-testid=\"message\">` containing the text `Click hide to dismiss` is already on the page and is **visible**. There is also a **Hide** button.\n\nWire up the page so that clicking the **Hide** button hides the message (but keeps the element in the DOM and keeps its layout space).\n\nYou'll need to:\n\n1. Track the visible/hidden status with a piece of state (a boolean works well).\n2. Drive the message's `style.visibility` from that state.\n3. Update the state when the button is clicked.\n\n> **Hint — what CSS property?** The CSS [`visibility`](https://developer.mozilla.org/en-US/docs/Web/CSS/visibility) property accepts `'visible'` and `'hidden'`. Unlike `display: none`, an element with `visibility: hidden` still occupies space. In a JSX style object the property is written as `visibility` (no camelCase change).",
+          "walkthrough": "1. State (`visible`) is the source of truth; the style is **derived** from it on every render.\n2. The button doesn't touch the DOM directly — it flips `visible` to `false`, and React re-renders the message with the updated style.\n3. Because we use `visibility` and not `display: none`, the message still occupies its row — clicking Hide doesn't cause the layout below to jump up.",
+          "files": {
+            "App.jsx": "import { useState } from 'react';\n\nexport default function App() {\n  // declare your state here\n\n  return (\n    <div>\n      <div data-testid=\"message\" style={{ visibility: 'visible' }}>\n        Click hide to dismiss\n      </div>\n      <button>Hide</button>\n    </div>\n  );\n}"
+          },
+          "entry": "App.jsx",
+          "tests": "import App from './App.jsx';\nimport { render, screen, fireEvent } from './__rtl__.js';\n\ntest('the message is visible before the button is clicked', () => {\n  render(<App />);\n  expect(screen.getByTestId('message').style.visibility).toBe('visible');\n});\n\ntest('clicking Hide hides the message', () => {\n  render(<App />);\n  fireEvent.click(screen.getByRole('button', { name: 'Hide' }));\n  expect(screen.getByTestId('message').style.visibility).toBe('hidden');\n});\n\ntest('the message text stays the same', () => {\n  render(<App />);\n  fireEvent.click(screen.getByRole('button', { name: 'Hide' }));\n  expect(screen.getByTestId('message')).toHaveTextContent('Click hide to dismiss');\n});",
+          "solution": {
+            "App.jsx": "import { useState } from 'react';\n\nexport default function App() {\n  const [visible, setVisible] = useState(true);\n\n  return (\n    <div>\n      <div\n        data-testid=\"message\"\n        style={{ visibility: visible ? 'visible' : 'hidden' }}\n      >\n        Click hide to dismiss\n      </div>\n      <button onClick={() => setVisible(false)}>Hide</button>\n    </div>\n  );\n}"
+          }
+        },
+        {
+          "id": "caff784c",
+          "aliases": [],
+          "title": "Pass State Through Props — Size Picker",
+          "order": 21,
+          "requirements": "A `Label` component is already defined and **locked** — it accepts a `size` prop (a number) and renders a `<span>` whose inline `font-size` is that many pixels.\n\nIn `App`:\n\n1. Create a state variable named `size` that starts as `16`.\n2. Render three buttons labelled **S**, **M**, and **L**. Each one should set `size` to `12`, `18`, or `28` respectively.\n3. Render a single `<Label text=\"Hello\" />`-style instance, passing the current `size` value to its `size` prop, so the label's font size updates in response to the buttons.",
+          "walkthrough": "1. State lives in `App`, but the visual change happens inside `<Label />` — a prop bridges the two.\n2. Each button's `onClick` updates the parent's state; React re-renders `App`, which passes the new `size` down to `Label`.\n3. This is the classic React data flow: **state up, props down.**",
+          "files": {
+            "App.jsx": "import { useState } from 'react';\n\n// @lock\nexport function Label(props) {\n  return (\n    <span data-testid=\"label\" style={{ fontSize: props.size }}>\n      Hello\n    </span>\n  );\n}\n// @endlock\n\nexport default function App() {\n  // your code here\n\n  return (\n    <div>\n      {/* buttons and <Label /> go here */}\n    </div>\n  );\n}"
+          },
+          "entry": "App.jsx",
+          "tests": "import App from './App.jsx';\nimport { render, screen, fireEvent } from './__rtl__.js';\n\ntest('label starts at 16px', () => {\n  render(<App />);\n  expect(screen.getByTestId('label').style.fontSize).toBe('16px');\n});\n\ntest('clicking S sets font size to 12px', () => {\n  render(<App />);\n  fireEvent.click(screen.getByRole('button', { name: 'S' }));\n  expect(screen.getByTestId('label').style.fontSize).toBe('12px');\n});\n\ntest('clicking M sets font size to 18px', () => {\n  render(<App />);\n  fireEvent.click(screen.getByRole('button', { name: 'M' }));\n  expect(screen.getByTestId('label').style.fontSize).toBe('18px');\n});\n\ntest('clicking L sets font size to 28px', () => {\n  render(<App />);\n  fireEvent.click(screen.getByRole('button', { name: 'L' }));\n  expect(screen.getByTestId('label').style.fontSize).toBe('28px');\n});",
+          "solution": {
+            "App.jsx": "import { useState } from 'react';\n\n// @lock\nexport function Label(props) {\n  return (\n    <span data-testid=\"label\" style={{ fontSize: props.size }}>\n      Hello\n    </span>\n  );\n}\n// @endlock\n\nexport default function App() {\n  const [size, setSize] = useState(16);\n\n  return (\n    <div>\n      <button onClick={() => setSize(12)}>S</button>\n      <button onClick={() => setSize(18)}>M</button>\n      <button onClick={() => setSize(28)}>L</button>\n      <Label size={size} />\n    </div>\n  );\n}"
+          }
+        },
+        {
+          "id": "c8dd2e85",
+          "aliases": [],
+          "title": "Hover to Change a Border",
+          "order": 22,
+          "requirements": "A 60×60 `<div>` is already in place. Make its **border colour** respond to the cursor:\n\n- When the mouse moves **onto** the div, the border colour should be `purple`.\n- When the mouse moves **off** the div, the border colour should be `gray`.\n\nUse a single state variable to track the current border colour.\n\n> **Hint:** React provides event props for when the cursor enters or leaves an element (`onMouseOver`/`onMouseOut`, or `onMouseEnter`/`onMouseLeave`).",
+          "walkthrough": "1. `onMouseOver` fires when the cursor enters the element, `onMouseOut` when it leaves.\n2. Both handlers update the same state variable, and the style template-string reads from it — so the border tracks the cursor.\n3. The shorthand `border: \\`4px solid ${borderColor}\\`` keeps the width and style fixed and only varies the colour.",
+          "files": {
+            "App.jsx": "import { useState } from 'react';\n\nexport default function App() {\n  // track the border colour in state\n\n  return (\n    <div\n      data-testid=\"hoverbox\"\n      style={{\n        width: 60,\n        height: 60,\n        background: 'white',\n        border: '4px solid gray',\n      }}\n    />\n  );\n}"
+          },
+          "entry": "App.jsx",
+          "tests": "import App from './App.jsx';\nimport { render, screen } from './__rtl__.js';\n\nfunction dispatch(el, type) {\n  el.dispatchEvent(new MouseEvent(type, { bubbles: true }));\n}\n\ntest('starts with a gray border', () => {\n  render(<App />);\n  const box = screen.getByTestId('hoverbox');\n  expect(box.style.border).toBe('4px solid gray');\n});\n\ntest('border turns purple when the mouse enters', () => {\n  render(<App />);\n  const box = screen.getByTestId('hoverbox');\n  dispatch(box, 'mouseover');\n  expect(box.style.border).toBe('4px solid purple');\n});\n\ntest('border returns to gray when the mouse leaves', () => {\n  render(<App />);\n  const box = screen.getByTestId('hoverbox');\n  dispatch(box, 'mouseover');\n  dispatch(box, 'mouseout');\n  expect(box.style.border).toBe('4px solid gray');\n});",
+          "solution": {
+            "App.jsx": "import { useState } from 'react';\n\nexport default function App() {\n  const [borderColor, setBorderColor] = useState('gray');\n\n  return (\n    <div\n      data-testid=\"hoverbox\"\n      onMouseOver={() => setBorderColor('purple')}\n      onMouseOut={() => setBorderColor('gray')}\n      style={{\n        width: 60,\n        height: 60,\n        background: 'white',\n        border: `4px solid ${borderColor}`,\n      }}\n    />\n  );\n}"
+          }
+        },
+        {
+          "id": "ed17dbb5",
+          "aliases": [],
+          "title": "A Self-Contained Score Counter",
+          "order": 23,
+          "requirements": "Build a `Score` component that owns its own state:\n\n1. Internally, hold a state variable named `score` that starts at `0`.\n2. Render a `<p data-testid=\"score\">` displaying the current score.\n3. Render a button labelled **+5** that increases `score` by 5.\n4. Render a button labelled **+10** that increases `score` by 10.\n5. Render a button labelled **Reset** that sets `score` back to `0`.\n\n`App` should render an instance of `<Score />`.",
+          "walkthrough": "1. State and the buttons that change it can live entirely inside a child component — `App` doesn't need to know about `score`.\n2. Each button calls `setScore` with a different value (current + 5, current + 10, or `0`).\n3. Each instance of `<Score />` would get its own independent state, even if you rendered several side by side.",
+          "files": {
+            "App.jsx": "import { useState } from 'react';\n\nexport function Score() {\n  // build me\n}\n\nexport default function App() {\n  return <Score />;\n}"
+          },
+          "entry": "App.jsx",
+          "tests": "import App, { Score } from './App.jsx';\nimport { render, screen, fireEvent } from './__rtl__.js';\n\ntest('score starts at 0', () => {\n  render(<Score />);\n  expect(screen.getByTestId('score')).toHaveTextContent('0');\n});\n\ntest('+5 adds 5 to the score', () => {\n  render(<Score />);\n  fireEvent.click(screen.getByRole('button', { name: '+5' }));\n  fireEvent.click(screen.getByRole('button', { name: '+5' }));\n  expect(screen.getByTestId('score')).toHaveTextContent('10');\n});\n\ntest('+10 adds 10 to the score', () => {\n  render(<Score />);\n  fireEvent.click(screen.getByRole('button', { name: '+10' }));\n  expect(screen.getByTestId('score')).toHaveTextContent('10');\n});\n\ntest('Reset returns the score to 0', () => {\n  render(<Score />);\n  fireEvent.click(screen.getByRole('button', { name: '+10' }));\n  fireEvent.click(screen.getByRole('button', { name: '+5' }));\n  fireEvent.click(screen.getByRole('button', { name: 'Reset' }));\n  expect(screen.getByTestId('score')).toHaveTextContent('0');\n});\n\ntest('App renders a Score', () => {\n  render(<App />);\n  expect(screen.getByTestId('score')).toHaveTextContent('0');\n});",
+          "solution": {
+            "App.jsx": "import { useState } from 'react';\n\nexport function Score() {\n  const [score, setScore] = useState(0);\n\n  return (\n    <div>\n      <p data-testid=\"score\">{score}</p>\n      <button onClick={() => setScore(score + 5)}>+5</button>\n      <button onClick={() => setScore(score + 10)}>+10</button>\n      <button onClick={() => setScore(0)}>Reset</button>\n    </div>\n  );\n}\n\nexport default function App() {\n  return <Score />;\n}"
+          }
+        },
+        {
+          "id": "9419b3f2",
+          "aliases": [],
+          "title": "Random Emoji Picker",
+          "order": 24,
+          "requirements": "A `Picker` component is partially built: it renders a `<span data-testid=\"emoji\">` displaying the currently selected emoji, plus a **Pick** button.\n\nYour job:\n\n1. Add a state variable named `emoji` that holds the current selection. Start it at the string `'🙂'`.\n2. Wire the **Pick** button so that clicking it sets `emoji` to a random element of the locked `emojis` array.\n3. Display `emoji` inside the `<span data-testid=\"emoji\">`.\n\n> **Hint:** for a random index, use `Math.floor(Math.random() * emojis.length)`.",
+          "walkthrough": "1. The state holds the *current* emoji; clicking Pick replaces it with a fresh random choice.\n2. `Math.random() * emojis.length` gives a number in `[0, length)`; `Math.floor` turns it into a valid integer index.\n3. Defining the array inside the component keeps the data co-located with the UI that uses it. Marking it `@lock` makes sure the tests can rely on the exact contents.",
+          "files": {
+            "App.jsx": "import { useState } from 'react';\n\nexport function Picker() {\n  // declare your state here\n\n  // @lock\n  const emojis = ['🙂', '😎', '🥳', '🤔', '🚀', '🎉'];\n  // @endlock\n\n  return (\n    <div>\n      <span data-testid=\"emoji\">{/* display emoji here */}</span>\n      <button>Pick</button>\n    </div>\n  );\n}\n\nexport default function App() {\n  return <Picker />;\n}"
+          },
+          "entry": "App.jsx",
+          "tests": "import App, { Picker } from './App.jsx';\nimport { render, screen, fireEvent } from './__rtl__.js';\n\nconst EMOJIS = ['🙂', '😎', '🥳', '🤔', '🚀', '🎉'];\n\ntest('picker starts showing 🙂', () => {\n  render(<Picker />);\n  expect(screen.getByTestId('emoji')).toHaveTextContent('🙂');\n});\n\ntest('clicking Pick selects one of the locked emojis', () => {\n  render(<Picker />);\n  for (let i = 0; i < 20; i++) {\n    fireEvent.click(screen.getByRole('button', { name: 'Pick' }));\n    const text = screen.getByTestId('emoji').textContent.trim();\n    expect(EMOJIS.indexOf(text) !== -1).toBeTruthy();\n  }\n});\n\ntest('clicking Pick can produce any emoji in the array', () => {\n  const orig = Math.random;\n  try {\n    render(<Picker />);\n    const btn = screen.getByRole('button', { name: 'Pick' });\n\n    // Force the last index.\n    Math.random = () => (EMOJIS.length - 1) / EMOJIS.length;\n    fireEvent.click(btn);\n    expect(screen.getByTestId('emoji')).toHaveTextContent(EMOJIS[EMOJIS.length - 1]);\n\n    // Force the first index.\n    Math.random = () => 0;\n    fireEvent.click(btn);\n    expect(screen.getByTestId('emoji')).toHaveTextContent(EMOJIS[0]);\n  } finally {\n    Math.random = orig;\n  }\n});",
+          "solution": {
+            "App.jsx": "import { useState } from 'react';\n\nexport function Picker() {\n  const [emoji, setEmoji] = useState('🙂');\n\n  // @lock\n  const emojis = ['🙂', '😎', '🥳', '🤔', '🚀', '🎉'];\n  // @endlock\n\n  const pick = () => {\n    const next = emojis[Math.floor(Math.random() * emojis.length)];\n    setEmoji(next);\n  };\n\n  return (\n    <div>\n      <span data-testid=\"emoji\">{emoji}</span>\n      <button onClick={pick}>Pick</button>\n    </div>\n  );\n}\n\nexport default function App() {\n  return <Picker />;\n}"
+          }
         }
       ]
     },
@@ -765,19 +893,19 @@
           }
         },
         {
-          "id": "b02643d7",
+          "id": "4a1ad767",
           "aliases": [],
-          "title": "Sum Two Numbers — Build It All",
+          "title": "Full Name Builder — Build It All",
           "order": 6,
-          "requirements": "Build the entire UI from scratch:\n\n1. Two state variables, one for each number.\n2. Two `<input>` elements with `data-testid=\"a\"` and `data-testid=\"b\"` — each one fully controlled (`value` + `onChange`).\n3. A `<div data-testid=\"sum\">` that displays the **numeric sum** of the two inputs.\n\nWhen an input is empty or non-numeric, treat it as `0` so the sum is always a valid number.",
-          "walkthrough": "1. Compared to the previous question, you now own the markup as well — but the controlled-input pattern is identical.\n2. State, `value`, and `onChange` form a tight loop: state drives the displayed value; the user's keystrokes drive state.\n3. Computing `sum` during render means it's automatically up to date — no extra \"recalculate\" step required.",
+          "requirements": "Build the entire UI from scratch:\n\n1. Two state variables, one for the user's first name and one for their last name.\n2. Two `<input type=\"text\">` elements with `data-testid=\"first\"` and `data-testid=\"last\"` — each one fully controlled (`value` + `onChange`).\n3. A `<div data-testid=\"full-name\">` that displays the full name as `<first> <last>` (a single space between them). When both inputs are empty, the `<div>` should show a single space — i.e. its trimmed text content should be empty.\n\n> **Hint:** strings concatenate with `+`, or you can interpolate them inside JSX using `{first} {last}`.",
+          "walkthrough": "1. You own the whole UI now — but the controlled-input pattern is identical to the previous questions: `value` from state, `onChange` writes back to state.\n2. Each field needs its **own** state — they hold independent values.\n3. The full name is derived during render (`{first} {last}`), so it's always in sync with the latest input — no extra state or effect needed for the combined value.",
           "files": {
             "App.jsx": "import { useState } from 'react';\n\nexport default function App() {\n  // build everything here\n  return null;\n}"
           },
           "entry": "App.jsx",
-          "tests": "import App from './App.jsx';\nimport { render, screen, fireEvent } from './__rtl__.js';\n\ntest('renders two inputs and a sum element', () => {\n  render(<App />);\n  expect(screen.getByTestId('a')).toBeTruthy();\n  expect(screen.getByTestId('b')).toBeTruthy();\n  expect(screen.getByTestId('sum')).toBeTruthy();\n});\n\ntest('starts with a sum of 0', () => {\n  render(<App />);\n  expect(screen.getByTestId('sum')).toHaveTextContent('0');\n});\n\ntest('typing into both inputs displays their sum', () => {\n  render(<App />);\n  fireEvent.change(screen.getByTestId('a'), { target: { value: '4' } });\n  fireEvent.change(screen.getByTestId('b'), { target: { value: '6' } });\n  expect(screen.getByTestId('sum')).toHaveTextContent('10');\n});\n\ntest('inputs are controlled (their value reflects state)', () => {\n  render(<App />);\n  fireEvent.change(screen.getByTestId('a'), { target: { value: '12' } });\n  expect(screen.getByTestId('a').value).toBe('12');\n});",
+          "tests": "import App from './App.jsx';\nimport { render, screen, fireEvent } from './__rtl__.js';\n\ntest('renders both inputs and the full-name element', () => {\n  render(<App />);\n  expect(screen.getByTestId('first')).toBeTruthy();\n  expect(screen.getByTestId('last')).toBeTruthy();\n  expect(screen.getByTestId('full-name')).toBeTruthy();\n});\n\ntest('starts empty', () => {\n  render(<App />);\n  expect(screen.getByTestId('first').value).toBe('');\n  expect(screen.getByTestId('last').value).toBe('');\n  expect((screen.getByTestId('full-name').textContent || '').trim()).toBe('');\n});\n\ntest('typing in both inputs joins them with a space', () => {\n  render(<App />);\n  fireEvent.change(screen.getByTestId('first'), { target: { value: 'Ada' } });\n  fireEvent.change(screen.getByTestId('last'), { target: { value: 'Lovelace' } });\n  expect(screen.getByTestId('full-name')).toHaveTextContent('Ada Lovelace');\n});\n\ntest('inputs are controlled (their value reflects state)', () => {\n  render(<App />);\n  fireEvent.change(screen.getByTestId('first'), { target: { value: 'Grace' } });\n  expect(screen.getByTestId('first').value).toBe('Grace');\n});\n\ntest('changing only one input updates the full name', () => {\n  render(<App />);\n  fireEvent.change(screen.getByTestId('first'), { target: { value: 'Ada' } });\n  fireEvent.change(screen.getByTestId('last'), { target: { value: 'Lovelace' } });\n  fireEvent.change(screen.getByTestId('first'), { target: { value: 'Alan' } });\n  expect(screen.getByTestId('full-name')).toHaveTextContent('Alan Lovelace');\n});",
           "solution": {
-            "App.jsx": "import { useState } from 'react';\n\nexport default function App() {\n  const [a, setA] = useState('');\n  const [b, setB] = useState('');\n\n  const sum = (Number(a) || 0) + (Number(b) || 0);\n\n  return (\n    <div>\n      <input\n        data-testid=\"a\"\n        type=\"number\"\n        value={a}\n        onChange={(e) => setA(e.target.value)}\n      />\n      <input\n        data-testid=\"b\"\n        type=\"number\"\n        value={b}\n        onChange={(e) => setB(e.target.value)}\n      />\n      <div data-testid=\"sum\">{sum}</div>\n    </div>\n  );\n}"
+            "App.jsx": "import { useState } from 'react';\n\nexport default function App() {\n  const [first, setFirst] = useState('');\n  const [last, setLast] = useState('');\n\n  return (\n    <div>\n      <input\n        data-testid=\"first\"\n        type=\"text\"\n        value={first}\n        onChange={(e) => setFirst(e.target.value)}\n      />\n      <input\n        data-testid=\"last\"\n        type=\"text\"\n        value={last}\n        onChange={(e) => setLast(e.target.value)}\n      />\n      <div data-testid=\"full-name\">{first} {last}</div>\n    </div>\n  );\n}"
           }
         },
         {
