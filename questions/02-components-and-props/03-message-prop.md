@@ -44,8 +44,8 @@ test('App passes "Welcome aboard!" through the prop', () => {
 ## Solution
 
 ```jsx file=App.jsx
-export function Message({ text }) {
-  return <div>{text}</div>;
+export function Message(props) {
+  return <div>{props.text}</div>;
 }
 
 export default function App() {
@@ -56,5 +56,5 @@ export default function App() {
 ## Walkthrough
 
 1. Props are passed to a component as the first function argument — a single object.
-2. Destructuring `{ text }` pulls out just the prop you care about.
-3. Inside JSX, `{text}` evaluates the variable and inserts it as text content.
+2. Access individual props via `props.text` (no destructuring).
+3. Inside JSX, `{props.text}` evaluates the expression and inserts it as text content.

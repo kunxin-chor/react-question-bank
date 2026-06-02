@@ -18,11 +18,11 @@ In `App`:
 import { useState } from 'react';
 
 // @lock
-export function Box({ background }) {
+export function Box(props) {
   return (
     <div
       data-testid="box"
-      style={{ width: 100, height: 100, background }}
+      style={{ width: 100, height: 100, background: props.background }}
     />
   );
 }
@@ -80,11 +80,11 @@ test('clicking White after Red turns the box white again', () => {
 import { useState } from 'react';
 
 // @lock
-export function Box({ background }) {
+export function Box(props) {
   return (
     <div
       data-testid="box"
-      style={{ width: 100, height: 100, background }}
+      style={{ width: 100, height: 100, background: props.background }}
     />
   );
 }

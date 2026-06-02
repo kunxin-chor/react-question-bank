@@ -53,8 +53,8 @@ test('App renders the smaller of 7 and 3 (which is 3)', () => {
 ## Solution
 
 ```jsx file=App.jsx
-export function FindLowest({ n1, n2 }) {
-  return <div>{Math.min(n1, n2)}</div>;
+export function FindLowest(props) {
+  return <div>{Math.min(props.n1, props.n2)}</div>;
 }
 
 export default function App() {

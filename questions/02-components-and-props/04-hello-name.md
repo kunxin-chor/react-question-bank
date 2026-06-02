@@ -53,8 +53,8 @@ test('App contains two <div> greetings', () => {
 ## Solution
 
 ```jsx file=App.jsx
-export function HelloName({ name }) {
-  return <div>Hello, {name}</div>;
+export function HelloName(props) {
+  return <div>Hello, {props.name}</div>;
 }
 
 export default function App() {

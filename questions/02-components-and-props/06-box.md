@@ -66,13 +66,13 @@ test('App renders two boxes with the specified styles', () => {
 ## Solution
 
 ```jsx file=App.jsx
-export function Box({ width, height, background }) {
+export function Box(props) {
   return (
     <div
       style={{
-        width,
-        height,
-        background,
+        width: props.width,
+        height: props.height,
+        background: props.background,
         display: 'inline-block',
       }}
     />
@@ -91,6 +91,6 @@ export default function App() {
 
 ## Walkthrough
 
-1. The shorthand `{ width, height, background }` in the style object is the same as `{ width: width, height: height, background: background }`.
+1. Access each prop directly off the `props` object: `props.width`, `props.height`, `props.background`.
 2. `display: 'inline-block'` lets the boxes sit on the same line; `display: 'block'` would stack them.
 3. Reusing the same `Box` component with different prop values is the same idea as `<HelloName />` from the previous lesson — props let one component cover many variations.
