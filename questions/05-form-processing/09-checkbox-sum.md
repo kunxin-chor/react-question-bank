@@ -6,12 +6,12 @@ title: Checkbox Sum
 
 Build a small form with three independent `<input type="checkbox">` elements and a `<div>` showing the **sum of the values of the checked boxes**.
 
-Specifications:
+The JSX scaffolding is already in place — the three checkboxes (with their `data-testid`, `type`, and `value` attributes) and the `sum` div are pre-built. Your job is to wire them up:
 
-1. The three checkboxes have `data-testid` values `cb-1`, `cb-2`, `cb-3` and represent the numbers `1`, `2`, and `4` respectively. Set each checkbox's `value` attribute to the corresponding number.
-2. Each checkbox starts **unchecked**.
-3. A `<div data-testid="sum">` displays the running total of all checked values. With nothing checked the sum is `0`.
-4. Toggling a checkbox immediately updates the sum.
+1. Each checkbox represents a number: `cb-1` → `1`, `cb-2` → `2`, `cb-3` → `4`. They each start **unchecked**.
+2. Make every checkbox *controlled* by binding its `checked` to state and updating that state on `onChange`.
+3. The `sum` div should always display the running total of all checked values. With nothing checked the sum is `0`.
+4. Toggling a checkbox should immediately update the sum.
 
 > **Hint:** the `checked` boolean of a checkbox lives at `e.target.checked` in the change event.
 
@@ -21,8 +21,26 @@ Specifications:
 import { useState } from 'react';
 
 export default function App() {
-  // build everything here
-  return null;
+  // declare your state here
+
+  return (
+    <div>
+      <label>
+        <input data-testid="cb-1" type="checkbox" value="1" />
+        1
+      </label>
+      <label>
+        <input data-testid="cb-2" type="checkbox" value="2" />
+        2
+      </label>
+      <label>
+        <input data-testid="cb-3" type="checkbox" value="4" />
+        4
+      </label>
+
+      <div data-testid="sum"></div>
+    </div>
+  );
 }
 ```
 

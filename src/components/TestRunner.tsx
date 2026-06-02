@@ -193,6 +193,7 @@ export default function TestRunner({
               dependencies: {
                 react: '18.3.1',
                 'react-dom': '18.3.1',
+                bootstrap: '5.3.3',
               },
             }}
           >

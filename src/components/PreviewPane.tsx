@@ -77,6 +77,7 @@ export default function PreviewPane({ files, entry, theme }: Props) {
             dependencies: {
               react: '18.3.1',
               'react-dom': '18.3.1',
+              bootstrap: '5.3.3',
             },
           }}
         >

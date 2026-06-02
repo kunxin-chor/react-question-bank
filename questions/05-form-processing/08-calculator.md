@@ -4,12 +4,11 @@ title: Mini Calculator
 
 ## Requirements
 
-Build a small calculator. From scratch, write:
+Build a small calculator. The JSX scaffolding is already in place — including all `data-testid` attributes, the input types, the radio `name`/`value` attributes, and the result div. Your job is to make it work:
 
-1. Two `<input type="number">` textboxes with `data-testid="a"` and `data-testid="b"`, each fully controlled.
-2. Four `<input type="radio" name="op">` radio buttons with `data-testid` values `op-add`, `op-sub`, `op-mul`, `op-div`, whose `value` attributes are exactly `+`, `-`, `*`, and `/`. Default the operation to `+`.
-3. A `<button data-testid="calc">` labelled **Calculate**.
-4. A `<div data-testid="result">` that displays the result of the calculation.
+1. Add state for the two operands, the chosen operator, and the latest result.
+2. Make every form control *controlled* — wire `value`/`checked` to state and add the right `onChange` handlers. Default the operation to `+`.
+3. When **Calculate** is pressed, compute `a <op> b` and put the result into the `result` div.
 
 Behaviour:
 
@@ -24,8 +23,37 @@ Behaviour:
 import { useState } from 'react';
 
 export default function App() {
-  // build everything here
-  return null;
+  // declare your state here
+
+  // implement the calculate handler here
+
+  return (
+    <div>
+      <input data-testid="a" type="number" />
+      <input data-testid="b" type="number" />
+
+      <label>
+        <input data-testid="op-add" type="radio" name="op" value="+" />
+        +
+      </label>
+      <label>
+        <input data-testid="op-sub" type="radio" name="op" value="-" />
+        -
+      </label>
+      <label>
+        <input data-testid="op-mul" type="radio" name="op" value="*" />
+        *
+      </label>
+      <label>
+        <input data-testid="op-div" type="radio" name="op" value="/" />
+        /
+      </label>
+
+      <button data-testid="calc">Calculate</button>
+
+      <div data-testid="result"></div>
+    </div>
+  );
 }
 ```
 

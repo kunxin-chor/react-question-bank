@@ -15,6 +15,14 @@ function escapeHtml(s: string) {
     .replace(/>/g, '&gt;');
 }
 
+function escapeAttr(s: string) {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+}
+
 function inline(s: string) {
   return escapeHtml(s)
     .replace(/`([^`]+)`/g, '<code class="px-1 rounded bg-slate-200/60 dark:bg-slate-700/50">$1</code>')
@@ -30,7 +38,15 @@ function render(md: string): string {
     const line = lines[i];
     // Fenced code
     if (line.startsWith('```')) {
-      const lang = line.slice(3).trim();
+      const header = line.slice(3).trim();
+      const tokens = header.split(/\s+/);
+      const lang = tokens[0] || '';
+      const attrs = Object.fromEntries(
+        tokens.slice(1).map((t) => {
+          const eq = t.indexOf('=');
+          return eq === -1 ? [t, 'true'] : [t.slice(0, eq), t.slice(eq + 1)];
+        }),
+      );
       const buf: string[] = [];
       i++;
       while (i < lines.length && !lines[i].startsWith('```')) {
@@ -38,9 +54,26 @@ function render(md: string): string {
         i++;
       }
       i++; // skip closing ```
+      const code = buf.join('\n');
+
+      // Special fence: html-preview shows the source AND a live-rendered iframe
+      // with Bootstrap 5.3 loaded so students can see the expected output.
+      if (lang === 'html-preview') {
+        const height = Number.parseInt(attrs.height || '220', 10);
+        const srcdoc = `<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"><style>body{margin:8px;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;}</style></head><body>${code}</body></html>`;
+        out.push(
+          `<div class="my-3"><div class="text-xs uppercase tracking-wide text-slate-500 mb-1">Expected output</div><iframe sandbox="allow-same-origin" srcdoc="${escapeAttr(
+            srcdoc,
+          )}" style="width:100%;height:${height}px;border:1px solid rgba(148,163,184,0.4);border-radius:6px;background:white;display:block;"></iframe><div class="text-xs uppercase tracking-wide text-slate-500 mt-3 mb-1">Expected HTML</div><pre class="p-3 rounded bg-slate-900 text-slate-100 overflow-auto text-xs leading-relaxed"><code data-lang="html">${escapeHtml(
+            code,
+          )}</code></pre></div>`,
+        );
+        continue;
+      }
+
       out.push(
         `<pre class="my-3 p-3 rounded bg-slate-900 text-slate-100 overflow-auto text-xs leading-relaxed"><code data-lang="${escapeHtml(lang)}">${escapeHtml(
-          buf.join('\n'),
+          code,
         )}</code></pre>`,
       );
       continue;
