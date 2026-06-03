@@ -94,11 +94,32 @@ export const screen = {
   debug() { console.log(getRoot().innerHTML); },
 };
 
+// React 18 replaces the input's "value"/"checked" property with its own
+// setter that also updates an internal change tracker. If we assign
+// el.value = x directly, that tracker is updated too, so when the input
+// event fires React thinks the value did NOT change and skips onChange.
+// To make controlled inputs fire onChange we must write through the
+// ORIGINAL native setter, leaving React's tracker holding the old value.
+function setNativeValue(el, prop, value) {
+  const proto =
+    el instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype :
+    el instanceof HTMLSelectElement ? HTMLSelectElement.prototype :
+    HTMLInputElement.prototype;
+  const desc = Object.getOwnPropertyDescriptor(proto, prop);
+  if (desc && desc.set) desc.set.call(el, value);
+  else el[prop] = value;
+}
+
 export const fireEvent = {
   click(el)  { act(() => { el.dispatchEvent(new MouseEvent('click', { bubbles: true })); }); },
   change(el, opts) {
     act(() => {
-      if (opts && opts.target && 'value' in opts.target) el.value = opts.target.value;
+      if (opts && opts.target && 'value' in opts.target) {
+        setNativeValue(el, 'value', opts.target.value);
+      }
+      if (opts && opts.target && 'checked' in opts.target) {
+        setNativeValue(el, 'checked', opts.target.checked);
+      }
       el.dispatchEvent(new Event('input', { bubbles: true }));
       el.dispatchEvent(new Event('change', { bubbles: true }));
     });
