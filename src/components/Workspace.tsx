@@ -13,9 +13,12 @@ import PreviewPane from '@/components/PreviewPane';
 import TestRunner from '@/components/TestRunner';
 import MarkdownView from '@/components/MarkdownView';
 import Reveal from '@/components/Reveal';
+import ComponentTree from '@/components/ComponentTree';
+import { resetTree } from '@/lib/devtoolsBridge';
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: 'question', label: 'Question' },
+  { key: 'components', label: 'Components' },
   { key: 'tests', label: 'Tests' },
   { key: 'solution', label: 'Solution' },
   { key: 'walkthrough', label: 'Walkthrough' },
@@ -100,6 +103,8 @@ function WorkspaceInner({
   // Re-hydrate active file when the question changes.
   useEffect(() => {
     dispatch({ type: 'hydrate', activeFile: q.entry });
+    // Clear the previous question's component tree until the new preview commits.
+    resetTree();
   }, [q.id, q.entry]);
 
   const onFilesChange = (next: Record<string, string>) => {
@@ -160,6 +165,11 @@ function WorkspaceInner({
             {tab === 'question' && (
               <div className="h-full overflow-auto">
                 <MarkdownView source={q.requirements} className="p-4" />
+              </div>
+            )}
+            {tab === 'components' && (
+              <div className="h-full min-h-0">
+                <ComponentTree />
               </div>
             )}
             {tab === 'tests' && (

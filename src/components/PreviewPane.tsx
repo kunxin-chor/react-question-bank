@@ -5,6 +5,7 @@ import {
   useSandpackClient,
   useSandpackNavigation,
 } from '@codesandbox/sandpack-react';
+import { DEVTOOLS_HOOK_SOURCE } from '@/sandbox/devtoolsHook';
 
 interface Props {
   files: Record<string, string>;
@@ -13,7 +14,10 @@ interface Props {
 }
 
 // A small index entry: imports the user's default export and mounts it.
+// The devtools hook MUST be imported first so __REACT_DEVTOOLS_GLOBAL_HOOK__
+// is installed before react-dom calls injectInternals().
 const indexEntry = (entryFile: string) => `
+import './__devtools__.js';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './${entryFile}';
@@ -29,6 +33,7 @@ export default function PreviewPane({ files, entry, theme }: Props) {
     for (const [name, code] of Object.entries(files)) {
       out['/' + name] = code;
     }
+    out['/__devtools__.js'] = DEVTOOLS_HOOK_SOURCE;
     out['/index.js'] = indexEntry(entry);
     return out;
   }, [files, entry]);
