@@ -18,10 +18,7 @@ Build a small app with two components: `App` and `NameInput`.
 
 ```jsx file=App.jsx default
 import { useState } from 'react';
-
-function NameInput(props) {
-  return <input data-testid="name-input" type="text" />;
-}
+import NameInput from './NameInput.jsx';
 
 export default function App() {
   // declare name state here
@@ -32,6 +29,12 @@ export default function App() {
       <NameInput />
     </div>
   );
+}
+```
+
+```jsx file=NameInput.jsx
+export default function NameInput(props) {
+  return <input data-testid="name-input" type="text" />;
 }
 ```
 
@@ -59,17 +62,7 @@ test('typing in the child input updates App state', () => {
 
 ```jsx file=App.jsx
 import { useState } from 'react';
-
-function NameInput(props) {
-  return (
-    <input
-      data-testid="name-input"
-      type="text"
-      value={props.name}
-      onChange={(e) => props.onNameChange(e.target.value)}
-    />
-  );
-}
+import NameInput from './NameInput.jsx';
 
 export default function App() {
   const [name, setName] = useState('Ada');
@@ -79,6 +72,19 @@ export default function App() {
       <p data-testid="app-display">{name}</p>
       <NameInput name={name} onNameChange={setName} />
     </div>
+  );
+}
+```
+
+```jsx file=NameInput.jsx
+export default function NameInput(props) {
+  return (
+    <input
+      data-testid="name-input"
+      type="text"
+      value={props.name}
+      onChange={(e) => props.onNameChange(e.target.value)}
+    />
   );
 }
 ```

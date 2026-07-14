@@ -20,23 +20,9 @@ Build an app with four components: `App`, `NumberInput`, `NumberList`, and `Numb
 
 ```jsx file=App.jsx default
 import { useState } from 'react';
-
-function NumberInput(props) {
-  return (
-    <div>
-      <input data-testid="number-input" type="text" />
-      <button data-testid="add-number">Add</button>
-    </div>
-  );
-}
-
-function NumberList(props) {
-  return <ul data-testid="number-list">{/* render numbers here */}</ul>;
-}
-
-function NumberTotal(props) {
-  return <p data-testid="number-total">{/* render total here */}</p>;
-}
+import NumberInput from './NumberInput.jsx';
+import NumberList from './NumberList.jsx';
+import NumberTotal from './NumberTotal.jsx';
 
 export default function App() {
   // declare numbers and draft state here
@@ -52,6 +38,29 @@ export default function App() {
       <NumberTotal />
     </div>
   );
+}
+```
+
+```jsx file=NumberInput.jsx
+export default function NumberInput(props) {
+  return (
+    <div>
+      <input data-testid="number-input" type="text" />
+      <button data-testid="add-number">Add</button>
+    </div>
+  );
+}
+```
+
+```jsx file=NumberList.jsx
+export default function NumberList(props) {
+  return <ul data-testid="number-list">{/* render numbers here */}</ul>;
+}
+```
+
+```jsx file=NumberTotal.jsx
+export default function NumberTotal(props) {
+  return <p data-testid="number-total">{/* render total here */}</p>;
 }
 ```
 
@@ -103,37 +112,9 @@ test('ignores empty and non-numeric input', () => {
 
 ```jsx file=App.jsx
 import { useState } from 'react';
-
-function NumberInput(props) {
-  return (
-    <div>
-      <input
-        data-testid="number-input"
-        type="text"
-        value={props.draft}
-        onChange={(e) => props.onDraftChange(e.target.value)}
-      />
-      <button data-testid="add-number" onClick={props.onAddNumber}>
-        Add
-      </button>
-    </div>
-  );
-}
-
-function NumberList(props) {
-  return (
-    <ul data-testid="number-list">
-      {props.numbers.map((number, index) => (
-        <li key={index}>{number}</li>
-      ))}
-    </ul>
-  );
-}
-
-function NumberTotal(props) {
-  const total = props.numbers.reduce((sum, number) => sum + number, 0);
-  return <p data-testid="number-total">{total}</p>;
-}
+import NumberInput from './NumberInput.jsx';
+import NumberList from './NumberList.jsx';
+import NumberTotal from './NumberTotal.jsx';
 
 export default function App() {
   const [numbers, setNumbers] = useState([2, 4, 6]);
@@ -158,6 +139,43 @@ export default function App() {
       <NumberTotal numbers={numbers} />
     </div>
   );
+}
+```
+
+```jsx file=NumberInput.jsx
+export default function NumberInput(props) {
+  return (
+    <div>
+      <input
+        data-testid="number-input"
+        type="text"
+        value={props.draft}
+        onChange={(e) => props.onDraftChange(e.target.value)}
+      />
+      <button data-testid="add-number" onClick={props.onAddNumber}>
+        Add
+      </button>
+    </div>
+  );
+}
+```
+
+```jsx file=NumberList.jsx
+export default function NumberList(props) {
+  return (
+    <ul data-testid="number-list">
+      {props.numbers.map((number, index) => (
+        <li key={index}>{number}</li>
+      ))}
+    </ul>
+  );
+}
+```
+
+```jsx file=NumberTotal.jsx
+export default function NumberTotal(props) {
+  const total = props.numbers.reduce((sum, number) => sum + number, 0);
+  return <p data-testid="number-total">{total}</p>;
 }
 ```
 

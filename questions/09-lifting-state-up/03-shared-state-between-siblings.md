@@ -18,14 +18,8 @@ Build an app with three components: `App`, `TextInput`, and `Display`.
 
 ```jsx file=App.jsx default
 import { useState } from 'react';
-
-function TextInput(props) {
-  return <input data-testid="text-input" type="text" />;
-}
-
-function Display(props) {
-  return <p data-testid="display">{/* show text here */}</p>;
-}
+import TextInput from './TextInput.jsx';
+import Display from './Display.jsx';
 
 export default function App() {
   // declare text state here
@@ -36,6 +30,18 @@ export default function App() {
       <Display />
     </div>
   );
+}
+```
+
+```jsx file=TextInput.jsx
+export default function TextInput(props) {
+  return <input data-testid="text-input" type="text" />;
+}
+```
+
+```jsx file=Display.jsx
+export default function Display(props) {
+  return <p data-testid="display">{/* show text here */}</p>;
 }
 ```
 
@@ -63,21 +69,8 @@ test('changing the input child updates the display child', () => {
 
 ```jsx file=App.jsx
 import { useState } from 'react';
-
-function TextInput(props) {
-  return (
-    <input
-      data-testid="text-input"
-      type="text"
-      value={props.text}
-      onChange={(e) => props.onTextChange(e.target.value)}
-    />
-  );
-}
-
-function Display(props) {
-  return <p data-testid="display">{props.text}</p>;
-}
+import TextInput from './TextInput.jsx';
+import Display from './Display.jsx';
 
 export default function App() {
   const [text, setText] = useState('Start');
@@ -88,6 +81,25 @@ export default function App() {
       <Display text={text} />
     </div>
   );
+}
+```
+
+```jsx file=TextInput.jsx
+export default function TextInput(props) {
+  return (
+    <input
+      data-testid="text-input"
+      type="text"
+      value={props.text}
+      onChange={(e) => props.onTextChange(e.target.value)}
+    />
+  );
+}
+```
+
+```jsx file=Display.jsx
+export default function Display(props) {
+  return <p data-testid="display">{props.text}</p>;
 }
 ```
 

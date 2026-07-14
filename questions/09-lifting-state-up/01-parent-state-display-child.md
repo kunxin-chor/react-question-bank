@@ -24,10 +24,7 @@ For example:
 
 ```jsx file=App.jsx default
 import { useState } from 'react';
-
-function Display(props) {
-  return <p data-testid="display">{/* show the message here */}</p>;
-}
+import Display from './Display.jsx';
 
 export default function App() {
   // declare message state here
@@ -38,6 +35,12 @@ export default function App() {
       <Display />
     </div>
   );
+}
+```
+
+```jsx file=Display.jsx
+export default function Display(props) {
+  return <p data-testid="display">{/* show the message here */}</p>;
 }
 ```
 
@@ -64,10 +67,7 @@ test('typing in the App textbox updates the Display component', () => {
 
 ```jsx file=App.jsx
 import { useState } from 'react';
-
-function Display(props) {
-  return <p data-testid="display">{props.message}</p>;
-}
+import Display from './Display.jsx';
 
 export default function App() {
   const [message, setMessage] = useState('Hello');
@@ -83,6 +83,12 @@ export default function App() {
       <Display message={message} />
     </div>
   );
+}
+```
+
+```jsx file=Display.jsx
+export default function Display(props) {
+  return <p data-testid="display">{props.message}</p>;
 }
 ```
 
