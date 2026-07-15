@@ -83,6 +83,8 @@ export default function PreviewPane({ files, entry, theme }: Props) {
               react: '18.3.1',
               'react-dom': '18.3.1',
               bootstrap: '5.3.3',
+              jotai: '2.10.3',
+              formik: '2.4.6',
             },
           }}
         >
