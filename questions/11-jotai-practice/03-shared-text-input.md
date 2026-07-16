@@ -4,7 +4,7 @@ title: Shared Text Input State
 
 ## Requirements
 
-An atom named `textAtom` has already been created for you in `atoms.js`, starting as an empty string. `Display.jsx` and `App.jsx` are already implemented and locked — `Display` renders whatever `textAtom` currently holds.
+An atom named `textAtom` has already been created for you in `atoms.js`, starting as an empty string. `Display.jsx` and `App.jsx` are already implemented — `Display` renders whatever `textAtom` currently holds.
 
 Your job is to finish `TextInput.jsx` so that it is a controlled textbox bound to `textAtom`, using `useAtom` to both read and write the atom in the same component.
 
@@ -36,7 +36,6 @@ export default function TextInput(props) {
 ```
 
 ```jsx file=Display.jsx
-// @lock
 import { useAtomValue } from 'jotai';
 import { textAtom } from './atoms.js';
 
@@ -44,14 +43,12 @@ export default function Display(props) {
   const text = useAtomValue(textAtom);
   return <p data-testid="text-display">{text}</p>;
 }
-// @endlock
 ```
 
 ```jsx file=App.jsx default
 import TextInput from './TextInput.jsx';
 import Display from './Display.jsx';
 
-// @lock
 export default function App() {
   return (
     <div>
@@ -60,7 +57,6 @@ export default function App() {
     </div>
   );
 }
-// @endlock
 ```
 
 ## Tests

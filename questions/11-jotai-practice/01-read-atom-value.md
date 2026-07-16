@@ -4,7 +4,7 @@ title: Read a Value from an Atom
 
 ## Requirements
 
-An atom named `themeAtom` has already been created for you in `atoms.js`, starting with the value `"light"`. `App.jsx` is already wired up and locked.
+An atom named `themeAtom` has already been created for you in `atoms.js`, starting with the value `"light"`. `App.jsx` is already wired up.
 
 Your job is to finish `Display.jsx` so that it reads `themeAtom`'s current value and renders it.
 
@@ -37,7 +37,6 @@ export default function Display(props) {
 ```jsx file=App.jsx default
 import Display from './Display.jsx';
 
-// @lock
 export default function App() {
   return (
     <div>
@@ -45,7 +44,6 @@ export default function App() {
     </div>
   );
 }
-// @endlock
 ```
 
 ## Tests

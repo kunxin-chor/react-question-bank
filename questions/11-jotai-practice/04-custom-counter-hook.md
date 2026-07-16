@@ -4,7 +4,7 @@ title: Custom Hook for a Counter
 
 ## Requirements
 
-An atom named `counterAtom` has already been created for you in `atoms.js`, starting at `0`. `App.jsx` is already implemented and locked — it calls a custom hook named `useCounter` and expects it to return `[count, increment, decrement]`.
+An atom named `counterAtom` has already been created for you in `atoms.js`, starting at `0`. `App.jsx` is already implemented — it calls a custom hook named `useCounter` and expects it to return `[count, increment, decrement]`.
 
 Your job is to finish `useCounter.js` so that it wraps `useAtom(counterAtom)` and returns:
 
@@ -42,7 +42,6 @@ export function useCounter() {
 ```jsx file=App.jsx default
 import { useCounter } from './useCounter.js';
 
-// @lock
 export default function App() {
   const [count, increment, decrement] = useCounter();
 
@@ -58,7 +57,6 @@ export default function App() {
     </div>
   );
 }
-// @endlock
 ```
 
 ## Tests

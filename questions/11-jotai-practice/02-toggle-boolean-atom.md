@@ -4,7 +4,7 @@ title: Toggle a Boolean Atom
 
 ## Requirements
 
-An atom named `isOnAtom` has already been created for you in `atoms.js`, starting as `false`. `Display.jsx` and `App.jsx` are already implemented and locked — `Display` shows `"On"` when the atom is `true`, and `"Off"` when it's `false`.
+An atom named `isOnAtom` has already been created for you in `atoms.js`, starting as `false`. `Display.jsx` and `App.jsx` are already implemented — `Display` shows `"On"` when the atom is `true`, and `"Off"` when it's `false`.
 
 Your job is to finish `ToggleButton.jsx` so that clicking the button flips the atom's boolean value.
 
@@ -37,7 +37,6 @@ export default function ToggleButton(props) {
 ```
 
 ```jsx file=Display.jsx
-// @lock
 import { useAtomValue } from 'jotai';
 import { isOnAtom } from './atoms.js';
 
@@ -45,14 +44,12 @@ export default function Display(props) {
   const isOn = useAtomValue(isOnAtom);
   return <p data-testid="status-display">{isOn ? 'On' : 'Off'}</p>;
 }
-// @endlock
 ```
 
 ```jsx file=App.jsx default
 import Display from './Display.jsx';
 import ToggleButton from './ToggleButton.jsx';
 
-// @lock
 export default function App() {
   return (
     <div>
@@ -61,7 +58,6 @@ export default function App() {
     </div>
   );
 }
-// @endlock
 ```
 
 ## Tests
